@@ -11,6 +11,7 @@ import json
 import shutil
 import codecs
 import twitter
+import zipfile
 
 def log(message,curdate):
     flog = open(wd + "/log.txt","a")
@@ -31,20 +32,24 @@ def download_list(listingurl,curdate):
         localfile = open("_listings/" + curdate + ".html", 'wb')
         localfile.write(res.read())
         localfile.close()
-        log("Listing " + curdate + " saved", curdate)
+        message = "Listing " + curdate + " saved"
+        print(message)
+        log(message, curdate)
         res = True
     except:
-        log("Listing " + curdate + " failed to load", curdate)
+        message = "Listing " + curdate + " failed to load"
+        print(message)
+        log(message, curdate)
         res = False
     
     return res
         
 def parse_list(listingurl,curdate):
     #prepare csv for saving parsed table
-    localfile = open("../_listings/" + curdate + ".csv", 'wb')
+    localfile = open("_listings/" + curdate + ".csv", 'wb')
     localfile.write("CODE;URL;URLDOWN;DESCRIPT;SRC;CAT\n")
     
-    lf = open("../_listings/" + curdate + ".html") 
+    lf = open("_listings/" + curdate + ".html") 
     datasets = []
     dataset = namedtuple('dataset', 'code,url,downurl,description,source,cat')
     soup = BeautifulSoup(''.join(lf.readlines()))
@@ -73,7 +78,7 @@ def parse_list(listingurl,curdate):
     
 def full_datasets_list(datasets):
 #Takes current datasets and updates general list of datasets with new ones. Needed, because current list of datasets sometimes is incomplete.
-    localfile = codecs.open("../_listings/_general.csv", 'rb', 'utf-8')
+    localfile = codecs.open("_listings/_general.csv", 'rb', 'utf-8')
     datasets_all = []
     dataset = namedtuple('dataset', 'code,url,downurl,description,source,cat,added')
     strs = localfile.readlines()[1:]
@@ -87,11 +92,12 @@ def full_datasets_list(datasets):
         pos = [i for i, v in enumerate(datasets_all) if v[0] == dataset.code]
         if len(pos) == 0: #Dataset missing in general list, i.e. new dataset is found
             #EVENT
-            localfile = open("../_listings/_general.csv", 'a')
+            localfile = open("_listings/_general.csv", 'a')
             localfile.write(dataset.code.encode("utf-8") + ";" + dataset.url.encode("utf-8") + ";" + dataset.downurl.encode("utf-8") + ";" + "\"" + dataset.description.encode("utf-8") + "\"" + ";" + "\"" + dataset.source.encode("utf-8") + "\"" + ";" + "\"" + dataset.cat.encode("utf-8") + "\"" + ";" + curdate + "\n")
             localfile.close()
             change_msg = "Новый набор данных (или первая загрузка): " + dataset.description[0:20:].encode("utf-8") + "... ("+ dataset.code + ") "
             change_msg_tw = "Новые данные: " + dataset.description[0:60:].encode("utf-8") + "... ("+ dataset.code + ") "
+            print(change_msg)
             log(change_msg,curdate)
             twit(change_msg_tw,dataset)
 
@@ -138,11 +144,14 @@ def savelocal(dataset,curdate):
 
 def compare_with_latest(dataset,curdate):
 #compare downloaded dataset with its latest version
+    os.chdir(dataset.code)
     change = False
-    fnN = dataset.code + "/" + dataset.code + "_temp.csv"
-    fnNA = dataset.code + "/archive/" + dataset.code + "_" + curdate + ".csv"
-    fnP = dataset.code + "/" + dataset.code + ".csv"
-    logf = dataset.code + "/" + dataset.code + "_changes.log"
+    fnN = dataset.code + "_temp.csv"
+    fnC = dataset.code + "_" + curdate + ".csv"
+    fnCz = dataset.code + "_" + curdate + ".zip"
+    fnP = dataset.code + ".csv"
+    fnPz = dataset.code + ".zip"
+    logf = dataset.code + "_changes.log"
       
     fN = open(fnN)
     fsN = os.stat(fnN).st_size 
@@ -172,7 +181,7 @@ def compare_with_latest(dataset,curdate):
         
         #check if number of records has changed
         if numrecsN > numrecsP:
-            rec_change_msg = ", записи " + str(numrecsN - numrecsP)
+            rec_change_msg = ", записи +" + str(numrecsN - numrecsP)
         elif numrecsN < numrecsP:
             rec_change_msg = ", записи -" + str(numrecsP - numrecsN)
         
@@ -183,27 +192,39 @@ def compare_with_latest(dataset,curdate):
             fld_change_msg = ", поля -" + str(numfldsP - numfldsN)
         
         if rec_change_msg == "" and fld_change_msg == "":
-            change_msg = "Обновление: " + shortname + "изменение содержания"
+            change_msg = "Обновление: " + shortname + " изменение содержания"
         else:
             change_msg = "Обновление: " + shortname + rec_change_msg + fld_change_msg
         
         f = open(logf,"a")
-        f.write(curdate + "," + str(numfldsN) + "," + str(numrecsN))
+        f.write(curdate + "," + str(numfldsN) + "," + str(numrecsN) + "\n")
         f.close()
         
+        #log everywhere
+        print(change_msg)
         log(change_msg,curdate)
         twit(change_msg,dataset)
-        os.remove(fnP)
-        shutil.copy(fnN, fnP)
-        shutil.copy(fnP, fnNA)
+        
+        shutil.move(fnN, fnP)
+        shutil.copy(fnP, fnC)
+        #save as zip files
+        fPz = zipfile.ZipFile(fnPz,'w')
+        fPz.write(fnP)
+        fPz.close()
+        fCz = zipfile.ZipFile(fnCz,'w')
+        fCz.write(fnC)
+        fCz.close()
+        os.remove(fnC)
+        shutil.move(fnCz, "archive")
 
-    os.remove(fnN)
-
+    os.chdir("..")
+    
 if __name__ == '__main__':
     #some preparations
     #get twitter credentials for writing http://twitter.com/datamosru
-    consumerkey,consumersecret,accesstokenkey,accesstokensecret = open("twitter-credentials.ini").readline.split(",")
+    consumerkey,consumersecret,accesstokenkey,accesstokensecret = open("twitter-credentials.ini").readline().split(",")
     api = twitter.Api(consumer_key=consumerkey, consumer_secret=consumersecret, access_token_key=accesstokenkey, access_token_secret=accesstokensecret)
+    os.chdir("/usr/local/www/gis-lab/data/data/mos.ru/data")
     wd = os.getcwd()
     listingurl = "http://data.mos.ru/datasets"
     if os.path.exists("_listings") == False: os.mkdir("_listings")
@@ -211,8 +232,8 @@ if __name__ == '__main__':
     
     success = download_list(listingurl,curdate)
     if success == True:
-        if os.path.exists("data") == False: os.mkdir("data")
-        os.chdir("data")
+        #if os.path.exists("data") == False: os.mkdir("data")
+        #os.chdir("data")
         datasets = parse_list(listingurl,curdate)
         datasets_all = full_datasets_list(datasets)
         for dataset in datasets_all:
