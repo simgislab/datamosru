@@ -1,7 +1,12 @@
-#-*- encoding: utf-8 -*-
-#To re-initialize data storage clear contents of _listings/_general.csv and data from /data
+# -*- coding: utf-8 -*-
+# ---------------------------------------------------------------------------
+# datamosru_control.py
+# Author: Maxim Dubinin (sim@gis-lab.info)
+# Created: 10:30 01.04.2013
+# Notes: To re-initialize data storage clear contents of _listings/_general.csv and data from /data
+# ---------------------------------------------------------------------------
 
-import os
+import os,sys
 import urllib2
 from bs4 import BeautifulSoup
 import pdb
@@ -11,7 +16,14 @@ import json
 import shutil
 import codecs
 import twitter
-import zipfile
+import zipfile,zlib
+
+def usage():
+  '''Show usage synopsis.
+  '''
+  #python datamosru_control.py /usr/local/www/gis-lab/data/data/mos.ru/data
+  print 'Usage: datamosru_control.py data_dir'
+  sys.exit( 1 )
 
 def log(message,curdate):
     flog = open(wd + "/log.txt","a")
@@ -208,15 +220,17 @@ def compare_with_latest(dataset,curdate):
         shutil.move(fnN, fnP)
         shutil.copy(fnP, fnC)
         #save as zip files
+        os.remove(fnPz)
         fPz = zipfile.ZipFile(fnPz,'w')
-        fPz.write(fnP)
+        fPz.write(fnP, compress_type=zipfile.ZIP_DEFLATED)
         fPz.close()
         fCz = zipfile.ZipFile(fnCz,'w')
-        fCz.write(fnC)
+        fCz.write(fnC, compress_type=zipfile.ZIP_DEFLATED)
         fCz.close()
         os.remove(fnC)
         shutil.move(fnCz, "archive")
-
+    
+    os.remove(fnN)
     os.chdir("..")
     
 if __name__ == '__main__':
@@ -224,8 +238,13 @@ if __name__ == '__main__':
     #get twitter credentials for writing http://twitter.com/datamosru
     consumerkey,consumersecret,accesstokenkey,accesstokensecret = open("twitter-credentials.ini").readline().split(",")
     api = twitter.Api(consumer_key=consumerkey, consumer_secret=consumersecret, access_token_key=accesstokenkey, access_token_secret=accesstokensecret)
-    os.chdir("/usr/local/www/gis-lab/data/data/mos.ru/data")
-    wd = os.getcwd()
+    
+    args = sys.argv[ 1: ]
+    if args is None or len( args ) < 1:
+        usage()
+    wd = args[ 0 ]
+    os.chdir(wd)
+
     listingurl = "http://data.mos.ru/datasets"
     if os.path.exists("_listings") == False: os.mkdir("_listings")
     curdate = datetime.now().strftime("%Y%m%d")
