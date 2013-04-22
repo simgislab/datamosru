@@ -230,7 +230,6 @@ def compare_with_latest(dataset,curdate):
         os.remove(fnC)
         shutil.move(fnCz, "archive")
     
-    os.remove(fnN)
     os.chdir("..")
     
 if __name__ == '__main__':
