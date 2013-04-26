@@ -172,11 +172,15 @@ def compare_with_latest(dataset,curdate):
     numrecsN = sum(1 for line in fN)
     
     if os.path.exists(fnP) == False: #first download of the dataset
-        shutil.copy(fnN, fnP)
+        shutil.move(fnN, fnP)
+        shutil.copy(fnP,"archive/" + dataset.code + "_" + curdate + ".csv")
+        fPz = zipfile.ZipFile(fnPz,'w')
+        fPz.write(fnP, compress_type=zipfile.ZIP_DEFLATED)
+        fPz.close()
+        
         f = open(logf,"a")
         f.write(curdate + "," + str(numfldsN) + "," + str(numrecsN) + "\n")
         f.close()
-        shutil.copy(fnP,"archive/" + dataset.code + "_" + curdate + ".csv")
 
     fP = open(fnP)
     fsP = os.stat(fnP).st_size  
