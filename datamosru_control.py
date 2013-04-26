@@ -17,6 +17,7 @@ import shutil
 import codecs
 import twitter
 import zipfile,zlib
+from optparse import OptionParser
 
 def usage():
   '''Show usage synopsis.
@@ -238,22 +239,31 @@ def compare_with_latest(dataset,curdate):
     os.chdir("..")
     
 if __name__ == '__main__':
+    usage = "Usage: %prog [-t TWITTER] [-s SPECIFIC ID] input_folder"
+    version = "%prog 0.1\nCopyright (C) 2013 Maxim Dubinin (sim@gis-lab.info)"
+    description = "Independent control over data.mos.ru data"
+    
+    # create parser instance
+    parser = OptionParser( usage = usage, version = version, description = description )
+
+    # populate options
+    parser.add_option( "-t", "--twitter-on", action = "store_true", dest = "allowtwit", default=True, help = "turn twitter on/off [default: %default]" )
+    parser.add_option( "-s", "--process-specific-id", action = "store", type = "string", dest = "specific_id", help = "process specific dataset only [default: empty]" )
+
+    parser.set_defaults( allowtwit = True )
+    (options, args) = parser.parse_args()
+    if len(args) == 0:
+        parser.error("working folder is missing")
+
     #some preparations
     #get twitter credentials for writing http://twitter.com/datamosru
     consumerkey,consumersecret,accesstokenkey,accesstokensecret = open("twitter-credentials.ini").readline().split(",")
     api = twitter.Api(consumer_key=consumerkey, consumer_secret=consumersecret, access_token_key=accesstokenkey, access_token_secret=accesstokensecret)
     
-    args = sys.argv[ 1: ]
-    if args is None or len( args ) < 1:
-        usage()
     wd = args[ 0 ]
-    if len( args ) > 1:
-        if args[ 1 ] == "yes":
-            allowtwit = True
-        elif args[ 1 ] == "no":
-            allowtwit = False
-        else:
-            allowtwit = True
+    allowtwit = options.allowtwit
+    specific_id = options.specific_id
+    
     os.chdir(wd)
 
     listingurl = "http://data.mos.ru/datasets"
@@ -266,11 +276,17 @@ if __name__ == '__main__':
         #os.chdir("data")
         datasets = parse_list(listingurl,curdate)
         datasets_all = full_datasets_list(datasets)
-        for dataset in datasets_all:
-            #if dataset.code == "609":
+        if specific_id is not None:
+            message = "Processing specific dataset: %s", specific_id
+            log(message, curdate)
+            dataset = datasets_all[[i for i, v in enumerate(datasets_all) if v[0] == specific_id][0]]
             savelocal(dataset,curdate)
             change = compare_with_latest(dataset,curdate)
-            if change == True: #do postprocessing for changed datasets
-                print("change")
+        else:
+            for dataset in datasets_all:
+                savelocal(dataset,curdate)
+                change = compare_with_latest(dataset,curdate)
+                if change == True: #do postprocessing for changed datasets
+                    print("change")
     else:
         print("Failed to download listing, try again later")
