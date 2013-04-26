@@ -32,10 +32,11 @@ def log(message,curdate):
     flog.write(str + "\n")
     flog.close()
 
-def twit(message,dataset):
+def twit(message,dataset,allowtwit):
     link = "http://gis-lab.info/data/mos.ru/data/" + dataset.code
     shortlink = urllib2.urlopen("http://tinyurl.com/api-create.php?url=%s" % link)
-    status = api.PostUpdate(message.decode("utf-8") + " " + shortlink.read())
+    if allowtwit == True:
+            status = api.PostUpdate(message.decode("utf-8") + " " + shortlink.read())
 
 def download_list(listingurl,curdate):
 #download list of datasets
@@ -111,7 +112,7 @@ def full_datasets_list(datasets):
             change_msg_tw = "Новые данные: " + dataset.description[0:60:].encode("utf-8") + "... ("+ dataset.code + ") "
             print(change_msg)
             log(change_msg,curdate)
-            twit(change_msg_tw,dataset)
+            twit(change_msg_tw,dataset,allowtwit)
 
             if os.path.exists(dataset.code) == False: os.mkdir(dataset.code)
             if os.path.exists(dataset.code + "/archive") == False: os.mkdir (dataset.code + "/archive")
@@ -124,7 +125,7 @@ def full_datasets_list(datasets):
             datasetn = namedtuple('dataset', 'code,url,downurl,description,source,cat,added')
             node = datasetn(dataset.code,dataset.url,dataset.downurl,dataset.description,dataset.source,dataset.cat.strip(),curdate)
             datasets_all.insert(0,node)
-            #twit(change_msg,dataset)
+            #twit(change_msg,dataset,allowtwit)
              
     return datasets_all
 
@@ -175,7 +176,7 @@ def compare_with_latest(dataset,curdate):
         f = open(logf,"a")
         f.write(curdate + "," + str(numfldsN) + "," + str(numrecsN) + "\n")
         f.close()
-        shutil.copy(fnP, dataset.code + "/archive/" + dataset.code + "_" + curdate + ".csv")
+        shutil.copy(fnP,"archive/" + dataset.code + "_" + curdate + ".csv")
 
     fP = open(fnP)
     fsP = os.stat(fnP).st_size  
@@ -215,7 +216,7 @@ def compare_with_latest(dataset,curdate):
         #log everywhere
         print(change_msg)
         log(change_msg,curdate)
-        twit(change_msg,dataset)
+        twit(change_msg,dataset,allowtwit)
         
         shutil.move(fnN, fnP)
         shutil.copy(fnP, fnC)
@@ -242,6 +243,13 @@ if __name__ == '__main__':
     if args is None or len( args ) < 1:
         usage()
     wd = args[ 0 ]
+    if len( args ) > 1:
+        if args[ 1 ] == "yes":
+            allowtwit = True
+        elif args[ 1 ] == "no":
+            allowtwit = False
+        else:
+            allowtwit = True
     os.chdir(wd)
 
     listingurl = "http://data.mos.ru/datasets"
