@@ -102,10 +102,11 @@ def full_datasets_list(datasets):
         node = dataset(code,url,downurl,description,source,cat.strip(),added)
         datasets_all.append(node)
     
+    #check for datasets added in downloaded list compared to general list
     for dataset in datasets:
         pos = [i for i, v in enumerate(datasets_all) if v[0] == dataset.code]
         if len(pos) == 0: #Dataset missing in general list, i.e. new dataset is found
-            #EVENT
+            #EVENT - dataset added
             localfile = open("_listings/_general.csv", 'a')
             localfile.write(dataset.code.encode("utf-8") + ";" + dataset.url.encode("utf-8") + ";" + dataset.downurl.encode("utf-8") + ";" + "\"" + dataset.description.encode("utf-8") + "\"" + ";" + "\"" + dataset.source.encode("utf-8") + "\"" + ";" + "\"" + dataset.cat.encode("utf-8") + "\"" + ";" + curdate + "\n")
             localfile.close()
@@ -126,9 +127,38 @@ def full_datasets_list(datasets):
             datasetn = namedtuple('dataset', 'code,url,downurl,description,source,cat,added')
             node = datasetn(dataset.code,dataset.url,dataset.downurl,dataset.description,dataset.source,dataset.cat.strip(),curdate)
             datasets_all.insert(0,node)
-            #twit(change_msg,dataset,allowtwit)
              
     return datasets_all
+
+def removed_datasets_list(datasets,datasets_all):
+    localfile = codecs.open("_listings/_removed.csv", 'rb', 'utf-8')
+    datasets_removed = []
+    dataset = namedtuple('dataset', 'code,url,downurl,description,source,cat,added')
+    strs = localfile.readlines()[1:]
+    localfile.close()
+    for str in strs:
+        code,url,downurl,description,source,cat,added = str.split(";")
+        node = dataset(code,url,downurl,description,source,cat.strip(),added)
+        datasets_removed.append(node)
+
+    #check for datasets removed from downloaded list compared to general list
+    for dataset in datasets_all: 
+        pos = [i for i, v in enumerate(datasets) if v[0] == dataset.code]
+        if len(pos) == 0: #Dataset missing in downloaded list, i.e. dataset is removed
+            pos = [i for i, v in enumerate(datasets_removed) if v[0] == dataset.code]
+            if len(pos) == 0: #missed dataset was not already announced (otherwise do nothing)
+                change_msg = "Данные удалены? " + dataset.description[0:60:].encode("utf-8") + "... ("+ dataset.code.encode("utf-8") + ") "
+                print(change_msg)
+                log(change_msg,curdate)
+                twit(change_msg,dataset,allowtwit)
+
+                #add removed dataset to the list of removed datasets as well
+                datasetn = namedtuple('dataset', 'code,url,downurl,description,source,cat,added')
+                node = datasetn(dataset.code,dataset.url,dataset.downurl,dataset.description,dataset.source,dataset.cat.strip(),curdate)
+                datasets_removed.insert(0,node)
+
+
+    return datasets_removed
 
 def savelocal(dataset,curdate):
     if os.path.exists(dataset.code) == False: os.mkdir(dataset.code)
@@ -276,6 +306,7 @@ if __name__ == '__main__':
         #os.chdir("data")
         datasets = parse_list(listingurl,curdate)
         datasets_all = full_datasets_list(datasets)
+        datasets_removed = removed_datasets_list(datasets,datasets_all)
         if specific_id is not None:
             message = "Processing specific dataset: %s", specific_id
             log(message, curdate)
