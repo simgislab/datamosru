@@ -40,7 +40,7 @@ def twit(message,dataset,allowtwit):
             status = api.PostUpdate(message.decode("utf-8") + " " + shortlink.read())
 
 def download_list(listingurl,curdate):
-#download list of datasets
+#download current list of datasets
     try:
         res = urllib2.urlopen(listingurl)
         localfile = open("_listings/" + curdate + ".html", 'wb')
@@ -64,7 +64,7 @@ def parse_list(listingurl,curdate):
     localfile.write("CODE;URL;URLDOWN;DESCRIPT;SRC;CAT\n")
     
     lf = open("_listings/" + curdate + ".html") 
-    datasets = []
+    datasets_current = []
     dataset = namedtuple('dataset', 'code,url,downurl,description,source,cat')
     soup = BeautifulSoup(''.join(lf.readlines()))
     table = soup.find("table", { "class" : "data_table" })
@@ -84,13 +84,13 @@ def parse_list(listingurl,curdate):
         
         #save to named tuple
         node = dataset(code,url,downurl,description,source,cat)
-        datasets.append(node)
+        datasets_current.append(node)
         
     localfile.close()
-    print("Total datasets number: " + str(len(datasets)))
-    return datasets
+    print("Total datasets number: " + str(len(datasets_current)))
+    return datasets_current
     
-def full_datasets_list(datasets):
+def full_datasets_list(datasets_current):
 #Takes current datasets and updates general list of datasets with new ones. Needed, because current list of datasets sometimes is incomplete.
     localfile = codecs.open("_listings/_general.csv", 'rb', 'utf-8')
     datasets_all = []
@@ -103,7 +103,7 @@ def full_datasets_list(datasets):
         datasets_all.append(node)
     
     #check for datasets added in downloaded list compared to general list
-    for dataset in datasets:
+    for dataset in datasets_current:
         pos = [i for i, v in enumerate(datasets_all) if v[0] == dataset.code]
         if len(pos) == 0: #Dataset missing in general list, i.e. new dataset is found
             #EVENT - dataset added
@@ -130,7 +130,7 @@ def full_datasets_list(datasets):
              
     return datasets_all
 
-def removed_datasets_list(datasets,datasets_all):
+def removed_datasets_list(datasets_current,datasets_all):
     localfile = codecs.open("_listings/_removed.csv", 'rb', 'utf-8')
     datasets_removed = []
     dataset = namedtuple('dataset', 'code,url,downurl,description,source,cat,added')
@@ -141,10 +141,21 @@ def removed_datasets_list(datasets,datasets_all):
         node = dataset(code,url,downurl,description,source,cat.strip(),added)
         datasets_removed.append(node)
 
-    #check for datasets removed from downloaded list compared to general list
+    #TODO: handle datasets that were restored
+    for dataset in datasets_current:
+        pos = [i for i, v in enumerate(datasets_removed) if v[0] == dataset.code]
+        if len(pos) != 0: #dataset is present in both current list and removed, meaning it was restored
+            change_msg = "Данные восстановлены " + dataset.description[0:60:].encode("utf-8") + "... ("+ dataset.code.encode("utf-8") + ") "
+            print(change_msg)
+            log(change_msg,curdate)
+            twit(change_msg,dataset,allowtwit)
+
+            #remove restored dataset from the list of removed, need to edit CSV, otherwise it will keep twiting that the dataset set was restored after every update
+
+    #check for datasets removed from current list compared to general list
     for dataset in datasets_all: 
-        pos = [i for i, v in enumerate(datasets) if v[0] == dataset.code]
-        if len(pos) == 0: #Dataset missing in downloaded list, i.e. dataset is removed
+        pos = [i for i, v in enumerate(datasets_current) if v[0] == dataset.code]
+        if len(pos) == 0: #Dataset is missing in current list, i.e. dataset is removed
             pos = [i for i, v in enumerate(datasets_removed) if v[0] == dataset.code]
             if len(pos) == 0: #missed dataset was not already announced (otherwise do nothing)
                 change_msg = "Данные удалены? " + dataset.description[0:60:].encode("utf-8") + "... ("+ dataset.code.encode("utf-8") + ") "
@@ -304,9 +315,9 @@ if __name__ == '__main__':
     if success == True:
         #if os.path.exists("data") == False: os.mkdir("data")
         #os.chdir("data")
-        datasets = parse_list(listingurl,curdate)
-        datasets_all = full_datasets_list(datasets)
-        datasets_removed = removed_datasets_list(datasets,datasets_all)
+        datasets_current = parse_list(listingurl,curdate)
+        datasets_all = full_datasets_list(datasets_current)
+        datasets_removed = removed_datasets_list(datasets_current,datasets_all)
         if specific_id is not None:
             message = "Processing specific dataset: %s", specific_id
             log(message, curdate)
