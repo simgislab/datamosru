@@ -107,9 +107,11 @@ def full_datasets_list(datasets_current):
         pos = [i for i, v in enumerate(datasets_all) if v[0] == dataset.code]
         if len(pos) == 0: #Dataset missing in general list, i.e. new dataset is found
             #EVENT - dataset added
+            #add a record to full datasets list csv
             localfile = open("_listings/_general.csv", 'a')
             localfile.write(dataset.code.encode("utf-8") + ";" + dataset.url.encode("utf-8") + ";" + dataset.downurl.encode("utf-8") + ";" + "\"" + dataset.description.encode("utf-8") + "\"" + ";" + "\"" + dataset.source.encode("utf-8") + "\"" + ";" + "\"" + dataset.cat.encode("utf-8") + "\"" + ";" + curdate + "\n")
             localfile.close()
+            
             change_msg = "Новый набор данных (или первая загрузка): " + dataset.description[0:20:].encode("utf-8") + "... ("+ dataset.code + ") "
             change_msg_tw = "Новые данные: " + dataset.description[0:60:].encode("utf-8") + "... ("+ dataset.code + ") "
             print(change_msg)
@@ -158,6 +160,12 @@ def removed_datasets_list(datasets_current,datasets_all):
         if len(pos) == 0: #Dataset is missing in current list, i.e. dataset is removed
             pos = [i for i, v in enumerate(datasets_removed) if v[0] == dataset.code]
             if len(pos) == 0: #missed dataset was not already announced (otherwise do nothing)
+                #EVENT - dataset removed
+                #add a record to list of removed.csv
+                localfile = open("_listings/_removed.csv", 'a')
+                localfile.write(dataset.code.encode("utf-8") + ";" + dataset.url.encode("utf-8") + ";" + dataset.downurl.encode("utf-8") + ";" + "\"" + dataset.description.encode("utf-8") + "\"" + ";" + "\"" + dataset.source.encode("utf-8") + "\"" + ";" + "\"" + dataset.cat.encode("utf-8") + "\"" + ";" + curdate + "\n")
+                localfile.close()
+                
                 change_msg = "Данные удалены? " + dataset.description[0:60:].encode("utf-8") + "... ("+ dataset.code.encode("utf-8") + ") "
                 print(change_msg)
                 log(change_msg,curdate)
