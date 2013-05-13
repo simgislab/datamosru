@@ -4,7 +4,7 @@
 # Author: Maxim Dubinin (sim@gis-lab.info)
 # Created: 10:30 01.04.2013
 # Notes: To re-initialize data storage clear contents of _listings/_general.csv and data from /data
-#Usage example: python datamosru_control.py /usr/local/www/gis-lab/data/data/mos.ru/data
+#Usage example: python datamosru_control.py -q -s 625 /usr/local/www/gis-lab/data/data/mos.ru/data
 # ---------------------------------------------------------------------------
 
 import os,sys
