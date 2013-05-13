@@ -4,6 +4,7 @@
 # Author: Maxim Dubinin (sim@gis-lab.info)
 # Created: 10:30 01.04.2013
 # Notes: To re-initialize data storage clear contents of _listings/_general.csv and data from /data
+#Usage example: python datamosru_control.py /usr/local/www/gis-lab/data/data/mos.ru/data
 # ---------------------------------------------------------------------------
 
 import os,sys
@@ -18,13 +19,6 @@ import codecs
 import twitter
 import zipfile,zlib
 from optparse import OptionParser
-
-def usage():
-  '''Show usage synopsis.
-  '''
-  #python datamosru_control.py /usr/local/www/gis-lab/data/data/mos.ru/data
-  print 'Usage: datamosru_control.py data_dir'
-  sys.exit( 1 )
 
 def log(message,curdate):
     flog = open(wd + "/log.txt","a")
@@ -153,6 +147,14 @@ def removed_datasets_list(datasets_current,datasets_all):
             twit(change_msg,dataset,allowtwit)
 
             #remove restored dataset from the list of removed, need to edit CSV, otherwise it will keep twiting that the dataset set was restored after every update
+            localfile = codecs.open("_listings/_removed.csv", 'rb', 'utf-8')
+            tempfile = codecs.open("_listings/_removed_temp.csv", 'wb', 'utf-8')
+            for row in localfile.readlines():
+                if not row[0].startswith(dataset.code):
+                    tempfile.write(row)
+            tempfile.close()
+            shutil.move("_listings/_removed_temp.csv", "_listings/_removed.csv")
+
 
     #check for datasets removed from current list compared to general list
     for dataset in datasets_all: 
@@ -296,10 +298,10 @@ if __name__ == '__main__':
     parser = OptionParser( usage = usage, version = version, description = description )
 
     # populate options
-    parser.add_option( "-t", "--twitter-on", action = "store_true", dest = "allowtwit", default=True, help = "turn twitter on/off [default: %default]" )
+    parser.add_option( "-q", "--quiet", action = "store_false", dest = "allowtwit", default=True, help = "turn twitter on/off [default: %default]" )
     parser.add_option( "-s", "--process-specific-id", action = "store", type = "string", dest = "specific_id", help = "process specific dataset only [default: empty]" )
 
-    parser.set_defaults( allowtwit = True )
+    #parser.set_defaults( allowtwit = True )
     (options, args) = parser.parse_args()
     if len(args) == 0:
         parser.error("working folder is missing")
