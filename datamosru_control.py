@@ -150,7 +150,7 @@ def removed_datasets_list(datasets_current,datasets_all):
             localfile = codecs.open("_listings/_removed.csv", 'rb', 'utf-8')
             tempfile = codecs.open("_listings/_removed_temp.csv", 'wb', 'utf-8')
             for row in localfile.readlines():
-                if not row[0].startswith(dataset.code):
+                if not row.startswith(dataset.code):
                     tempfile.write(row)
             tempfile.close()
             shutil.move("_listings/_removed_temp.csv", "_listings/_removed.csv")
