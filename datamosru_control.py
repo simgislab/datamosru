@@ -329,7 +329,7 @@ if __name__ == '__main__':
         datasets_all = full_datasets_list(datasets_current)
         datasets_removed = removed_datasets_list(datasets_current,datasets_all)
         if specific_id is not None:
-            message = "Processing specific dataset: %s", specific_id
+            message = "Processing specific dataset: " + specific_id
             log(message, curdate)
             dataset = datasets_all[[i for i, v in enumerate(datasets_all) if v[0] == specific_id][0]]
             savelocal(dataset,curdate)
