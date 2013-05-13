@@ -311,7 +311,7 @@ if __name__ == '__main__':
     consumerkey,consumersecret,accesstokenkey,accesstokensecret = open("twitter-credentials.ini").readline().split(",")
     api = twitter.Api(consumer_key=consumerkey, consumer_secret=consumersecret, access_token_key=accesstokenkey, access_token_secret=accesstokensecret)
     
-    wd = args[ 0 ]
+    wd = parser.parse_args()[1][0] #args[ 0 ] strangely this is not working
     allowtwit = options.allowtwit
     specific_id = options.specific_id
     
