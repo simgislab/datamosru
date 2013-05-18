@@ -1,13 +1,8 @@
-Independent control over http://data.mos.ru open data. Checks what has changed: 
+Independent monitoring of http://data.mos.ru open data. Checks what has changed: 
 new datasets, field added/removed, records added/removed, content changes.
 
-Независимый контроль изменений данных http://data.mos.ru. Отслеживает следующие изменения: 
+More info: http://gis-lab.info/qa/data-mos-control.html
 
-* добавлен набор данных
-* удален набор данных
-* восстановлен (после удаления) набор данных
-* добавились/убавились поля
-* добавились/убавились записи
-* изменение содержания.
+Updates: http://twitter.com/datamosru
 
-Обновления/Updates: http://twitter.com/datamosru
+To be gradually merged with data cleanup and conversion service.
