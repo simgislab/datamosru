@@ -55,11 +55,11 @@ def download_list(listingurl,curdate):
 def parse_list(listingurl,curdate):
     #prepare csv for saving parsed table
     localfile = open("_listings/" + curdate + ".csv", 'wb')
-    localfile.write("CODE;URL;URLDOWN;DESCRIPT;SRC;CAT\n")
+    localfile.write("CODE;GEO;URL;URLDOWN;DESCRIPT;SRC;CAT\n")
     
     lf = open("_listings/" + curdate + ".html") 
     datasets_current = []
-    dataset = namedtuple('dataset', 'code,url,downurl,description,source,cat')
+    dataset = namedtuple('dataset', 'code,geo,url,downurl,description,source,cat')
     soup = BeautifulSoup(''.join(lf.readlines()))
     table = soup.find("table", { "class" : "data_table" })
     trs = table.find("tbody").findAll("tr")
@@ -67,6 +67,7 @@ def parse_list(listingurl,curdate):
         tds = tr.findAll("td")
         url = tds[1].find('a')['href']
         code = url.replace("/datasets/","").split("_")[0]
+        geo = ""
         url = "http://data.mos.ru" + url
         downurl = "http://data.mos.ru/datasets/download/" + code + "/"
         description = list(tds[1].find('div').strings)[0].strip()
@@ -74,10 +75,10 @@ def parse_list(listingurl,curdate):
         source = list(tds[3].strings)[0].strip()
 
         #save to CSV file
-        localfile.write(code.encode("utf-8") + ";" + url.encode("utf-8") + ";" + downurl.encode("utf-8") + ";" + description.encode("utf-8") + ";" + source.encode("utf-8") + ";" + cat.encode("utf-8") + "\n")
+        localfile.write(code.encode("utf-8") + ";" + geo.encode("utf-8") + ";" + url.encode("utf-8") + ";" + downurl.encode("utf-8") + ";" + description.encode("utf-8") + ";" + source.encode("utf-8") + ";" + cat.encode("utf-8") + "\n")
         
         #save to named tuple
-        node = dataset(code,url,downurl,description,source,cat)
+        node = dataset(code,geo,url,downurl,description,source,cat)
         datasets_current.append(node)
         
     localfile.close()
@@ -88,12 +89,12 @@ def full_datasets_list(datasets_current):
 #Takes current datasets and updates general list of datasets with new ones. Needed, because current list of datasets sometimes is incomplete.
     localfile = codecs.open("_listings/_general.csv", 'rb', 'utf-8')
     datasets_all = []
-    dataset = namedtuple('dataset', 'code,url,downurl,description,source,cat,added')
+    dataset = namedtuple('dataset', 'code,geo,url,downurl,description,source,cat,added')
     strs = localfile.readlines()[1:]
     localfile.close()
     for str in strs:
-        code,url,downurl,description,source,cat,added = str.split(";")
-        node = dataset(code,url,downurl,description,source,cat.strip(),added)
+        code,geo,url,downurl,description,source,cat,added = str.split(";")
+        node = dataset(code,geo,url,downurl,description,source,cat.strip(),added)
         datasets_all.append(node)
     
     #check for datasets added in downloaded list compared to general list
@@ -103,7 +104,7 @@ def full_datasets_list(datasets_current):
             #EVENT - dataset added
             #add a record to full datasets list csv
             localfile = open("_listings/_general.csv", 'a')
-            localfile.write(dataset.code.encode("utf-8") + ";" + dataset.url.encode("utf-8") + ";" + dataset.downurl.encode("utf-8") + ";" + "\"" + dataset.description.encode("utf-8") + "\"" + ";" + "\"" + dataset.source.encode("utf-8") + "\"" + ";" + "\"" + dataset.cat.encode("utf-8") + "\"" + ";" + curdate + "\n")
+            localfile.write(dataset.code.encode("utf-8") + ";" + dataset.geo.encode("utf-8") + ";" + dataset.url.encode("utf-8") + ";" + dataset.downurl.encode("utf-8") + ";" + "\"" + dataset.description.encode("utf-8") + "\"" + ";" + "\"" + dataset.source.encode("utf-8") + "\"" + ";" + "\"" + dataset.cat.encode("utf-8") + "\"" + ";" + curdate + "\n")
             localfile.close()
             
             change_msg = "Новый набор данных (или первая загрузка): " + dataset.description[0:20:].encode("utf-8") + "... ("+ dataset.code + ") "
@@ -120,8 +121,8 @@ def full_datasets_list(datasets_current):
             f.close()
             
             #add missing dataset to full list of datasets as well 
-            datasetn = namedtuple('dataset', 'code,url,downurl,description,source,cat,added')
-            node = datasetn(dataset.code,dataset.url,dataset.downurl,dataset.description,dataset.source,dataset.cat.strip(),curdate)
+            datasetn = namedtuple('dataset', 'code,geo,url,downurl,description,source,cat,added')
+            node = datasetn(dataset.code,dataset.geo,dataset.url,dataset.downurl,dataset.description,dataset.source,dataset.cat.strip(),curdate)
             datasets_all.insert(0,node)
              
     return datasets_all
@@ -129,12 +130,12 @@ def full_datasets_list(datasets_current):
 def removed_datasets_list(datasets_current,datasets_all):
     localfile = codecs.open("_listings/_removed.csv", 'rb', 'utf-8')
     datasets_removed = []
-    dataset = namedtuple('dataset', 'code,url,downurl,description,source,cat,added')
+    dataset = namedtuple('dataset', 'code,geo,url,downurl,description,source,cat,added')
     strs = localfile.readlines()[1:]
     localfile.close()
     for str in strs:
-        code,url,downurl,description,source,cat,added = str.split(";")
-        node = dataset(code,url,downurl,description,source,cat.strip(),added)
+        code,geo,url,downurl,description,source,cat,added = str.split(";")
+        node = dataset(code,geo,url,downurl,description,source,cat.strip(),added)
         datasets_removed.append(node)
 
     #TODO: handle datasets that were restored
@@ -165,7 +166,7 @@ def removed_datasets_list(datasets_current,datasets_all):
                 #EVENT - dataset removed
                 #add a record to list of removed.csv
                 localfile = open("_listings/_removed.csv", 'a')
-                localfile.write(dataset.code.encode("utf-8") + ";" + dataset.url.encode("utf-8") + ";" + dataset.downurl.encode("utf-8") + ";" + "\"" + dataset.description.encode("utf-8") + "\"" + ";" + "\"" + dataset.source.encode("utf-8") + "\"" + ";" + "\"" + dataset.cat.encode("utf-8") + "\"" + ";" + curdate + "\n")
+                localfile.write(dataset.code.encode("utf-8") + ";" + dataset.geo.encode("utf-8") + ";" + dataset.url.encode("utf-8") + ";" + dataset.downurl.encode("utf-8") + ";" + "\"" + dataset.description.encode("utf-8") + "\"" + ";" + "\"" + dataset.source.encode("utf-8") + "\"" + ";" + "\"" + dataset.cat.encode("utf-8") + "\"" + ";" + curdate + "\n")
                 localfile.close()
                 
                 change_msg = "Данные удалены? " + dataset.description[0:60:].encode("utf-8") + "... ("+ dataset.code.encode("utf-8") + ") "
@@ -174,8 +175,8 @@ def removed_datasets_list(datasets_current,datasets_all):
                 twit(change_msg,dataset,allowtwit)
 
                 #add removed dataset to the list of removed datasets as well
-                datasetn = namedtuple('dataset', 'code,url,downurl,description,source,cat,added')
-                node = datasetn(dataset.code,dataset.url,dataset.downurl,dataset.description,dataset.source,dataset.cat.strip(),curdate)
+                datasetn = namedtuple('dataset', 'code,geo,url,downurl,description,source,cat,added')
+                node = datasetn(dataset.code,dataset.geo,dataset.url,dataset.downurl,dataset.description,dataset.source,dataset.cat.strip(),curdate)
                 datasets_removed.insert(0,node)
 
 
