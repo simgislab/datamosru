@@ -185,7 +185,7 @@ def removed_datasets_list(datasets_current,datasets_all):
 def savelocal(dataset,curdate):
     if os.path.exists(dataset.code) == False: os.mkdir(dataset.code)
     if os.path.exists(dataset.code + "/archive") == False: os.mkdir(dataset.code + "/archive")
-    downurl = dataset.downurl
+    downurl = dataset.downurl.replace("\"","")
     
     u = urllib2.urlopen(downurl)
     meta = u.info()
