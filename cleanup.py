@@ -20,7 +20,7 @@ for adir in dirs:
         	print("Removed: " + adir + "_temp.csv")
         	os.remove(adir + "_temp.csv")
         if os.path.exists(adir + ".csv") and not os.path.exists(adir + ".zip"):
-        	print("Zipped: " + adir + ".csv")
+            print("Zipped: " + adir + ".csv")
             fz = zipfile.ZipFile(adir + ".zip",'w')
             fz.write(adir + ".csv", compress_type=zipfile.ZIP_DEFLATED)
             fz.close()
