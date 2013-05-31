@@ -3,7 +3,7 @@
 # datamosru_control.py
 # Author: Maxim Dubinin (sim@gis-lab.info)
 # Created: 10:30 21.04.2013
-# Notes: Occasional cleanup
+# Notes: Occasional cleanups to remove temporary files and do data changes across whole data folder
 # ---------------------------------------------------------------------------
 
 import glob
