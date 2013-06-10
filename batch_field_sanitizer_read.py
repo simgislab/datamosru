@@ -85,6 +85,7 @@ if __name__ == '__main__':
         
         for field in fields_cur:
             field = field.replace("\r\n","")
+            field = field.replace("\n","")
             field = field.replace(u"/","_")
             field = field.replace(u"\u2116","N")    #знак номер
             field = field.replace(u"\xab","'")      #открывающая кавычка елочка
