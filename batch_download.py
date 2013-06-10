@@ -5,7 +5,7 @@
 # Created: 10:30 01.2.2013
 # About: Download all Moscow city data using list updated by datamosru_control.py
 # Notes: 
-# Usage example: python datamosru_control.py -q -s 625 /usr/local/www/gis-lab/data/data/mos.ru/data
+# Usage example: python batch_download.py
 # ---------------------------------------------------------------------------
 
 import urllib2
