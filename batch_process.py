@@ -44,7 +44,29 @@ def strip_whites(f,fr):
     f_csv.close()
     f_csv_new.close()
     shutil.move(fr + "_temp.csv",f)
+
+def strip_paragraphs(f,fr):
+#This is almost exact copy of strip_whites function. Both should probably be joined somehow.
+    f_csv = open(f,'rb')
+    names = csv.reader(f_csv).next()[0].split(";")
+    csvreader = csv.DictReader(f_csv,delimiter=";", fieldnames=names)
     
+    f_csv_new = open(fr + "_temp.csv",'wb')
+    csvwriter = csv.DictWriter(f_csv_new, fieldnames=names,delimiter=";")
+    csvwriter.writerow(dict((fn,fn) for fn in csvwriter.fieldnames))
+    
+    for row in csvreader:
+        for k in row.keys():
+            try:
+                row[k] = row[k].replace("\n","")
+            except:
+                pass
+        csvwriter.writerow(row)
+    
+    f_csv.close()
+    f_csv_new.close()
+    shutil.move(fr + "_temp.csv",f)
+
 def add_latlong(f,fr):
     f_csv = open(f,'rb')
     names = csv.reader(f_csv).next()[0].split(";")
@@ -185,8 +207,9 @@ if __name__ == '__main__':
         #Convert CSV from CP1251 to UTF-8 without BOM
         #csv2utf(f,fr)
         
-        #Strip all whitespaces
+        #Strip all whitespaces and paragraphs that break records
         strip_whites(f,fr)
+        strip_paragraphs(f,fr)
         
         #Create CSVT file for field types
         make_csvt(f,fr)
