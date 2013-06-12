@@ -61,6 +61,10 @@ def strip_paragraphs(f,fr):
                 row[k] = row[k].replace("\n","")
             except:
                 pass
+            try:
+                row[k] = row[k].replace("\r","")
+            except:
+                pass
         csvwriter.writerow(row)
     
     f_csv.close()
@@ -149,7 +153,7 @@ def make_vrt(f,fr):
     vrt_wkt = """<OGRVRTDataSource>
     <OGRVRTLayer name="%s">
         <SrcDataSource relativeToVRT="1">%s</SrcDataSource>
-        <LayerSRS>EPSG:3857</LayerSRS>
+        <LayerSRS>EPSG:3857</LayerSRS-
         <GeometryType>wkbUnknown</GeometryType>
         <GeometryField encoding="WKT" field="WKT"/>
     </OGRVRTLayer>
