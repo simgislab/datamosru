@@ -3,9 +3,11 @@
 
 import csv
 import os
+import urllib2
 
 f = "_general.csv"
-reader = csv.reader( open( f, "rb"), delimiter=";" )
+f = urllib2.urlopen("http://gis-lab.info/data/mos.ru/data/_listings/_general.csv")
+reader = csv.reader(f, delimiter=";" )
 
 print """==Таблица данных==
 {| class="wikitable sortable" border="1" width="100%"
@@ -35,9 +37,9 @@ for row in reader:
         datalink_osm = ""
         
     #count number of objects
-    datafile = open("data/"+code+".csv","rb")
-    numobj = len(datafile.readlines()) - 1
-    datafile.close()
+    f = open("data-norm/norm-20130611/"+code+".csv","rb")
+    numobj = len(f.readlines()) - 1
+    f.close()
     
     print """|-
 | %s
