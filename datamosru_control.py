@@ -219,7 +219,7 @@ def compare_with_latest(dataset,curdate):
     fnPz = dataset.code + ".zip"
     logf = dataset.code + "_changes.log"
       
-    fN = open(fnN)
+    fN = open(fnN)  #new version
     fsN = os.stat(fnN).st_size 
     numfldsN = len(fN.readline().split(";"))
     numrecsN = sum(1 for line in fN)
@@ -235,7 +235,7 @@ def compare_with_latest(dataset,curdate):
         f.write(curdate + "," + str(numfldsN) + "," + str(numrecsN) + "\n")
         f.close()
 
-    fP = open(fnP)
+    fP = open(fnP)  #previous version
     fsP = os.stat(fnP).st_size  
     numfldsP = len(fP.readline().split(";"))
     numrecsP = sum(1 for line in fP)
@@ -287,6 +287,9 @@ def compare_with_latest(dataset,curdate):
         fCz.close()
         os.remove(fnC)
         shutil.move(fnCz, "archive")
+    
+    else: #filesizes are the same, remove temp
+        os.remove(fnN)
     
     os.chdir("..")
     
