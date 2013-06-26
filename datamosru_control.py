@@ -19,6 +19,7 @@ import codecs
 import twitter
 import zipfile,zlib
 from optparse import OptionParser
+import bitly_api
 
 def log(message,curdate):
     flog = open(wd + "/log.txt","a")
@@ -29,9 +30,9 @@ def log(message,curdate):
 
 def twit(message,dataset,allowtwit):
     link = "http://gis-lab.info/data/mos.ru/data/" + dataset.code
-    shortlink = urllib2.urlopen("http://tinyurl.com/api-create.php?url=%s" % link)
+    shortlink = bitly.shorten(link)['url'] #urllib2.urlopen("http://tinyurl.com/api-create.php?url=%s" % link)
     if allowtwit == True:
-            status = api.PostUpdate(message.decode("utf-8") + " " + shortlink.read())
+            status = api.PostUpdate(message.decode("utf-8") + " " + shortlink)
 
 def download_list(listingurl,curdate):
 #download current list of datasets
@@ -314,6 +315,10 @@ if __name__ == '__main__':
     #get twitter credentials for writing http://twitter.com/datamosru
     consumerkey,consumersecret,accesstokenkey,accesstokensecret = open("twitter-credentials.ini").readline().split(",")
     api = twitter.Api(consumer_key=consumerkey, consumer_secret=consumersecret, access_token_key=accesstokenkey, access_token_secret=accesstokensecret)
+    
+    #get bitly credentials for url shortening
+    api_user,api_key = open("bitly-credentials.ini").readline().split(",")
+    bitly = bitly_api.Connection(api_user, api_key)
     
     wd = parser.parse_args()[1][0] #args[ 0 ] strangely this is not working
     allowtwit = options.allowtwit
