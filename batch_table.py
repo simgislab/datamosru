@@ -8,17 +8,18 @@ import urllib2
 f = "_general.csv"
 f = urllib2.urlopen("http://gis-lab.info/data/mos.ru/data/_listings/_general.csv")
 reader = csv.reader(f, delimiter=";" )
-date = "20130611"
+date = "20130626"
+date_prev = "20130611"
 
 fon = "table.wiki"
 fo = open(fon,"w")
 
 fo.write("""===—качать данные===
 
-ѕоле изменение показывает сравнение с версией от %s.
+ѕоле "изменение" показывает сравнение с версией от %s.
 
 ÷ветами показаны: <span style="background-color:LightGreen">увеличение</span> или <span style="background-color:Salmon">уменьшение</span> количества объектов, <span style="background-color:Yellow">новый набор</span> (отсутствовавший %s)
-""" % (date,date))
+""" % (date_prev,date_prev))
 
 fo.write("""
 {| class="wikitable sortable" border="1" width="100%"
@@ -47,10 +48,13 @@ for row in reader:
     if geo == "no":
         datalink_shp = ""
         datalink_osm = ""
+        geo = "нет"
+    else:
+        geo = "да"
         
     #count number of objects
     print("data-norm/norm-" + date + "/"+code+".csv")
-    if os.path.isfile("data-norm/norm-20130611/"+code+".csv") == False:
+    if os.path.isfile("data-norm/norm-" + date + "/"+code+".csv") == False:
         print("This file is missing in local folder and skipped in the table")
         numobj = "X"
         style = "bgcolor=\"Yellow\" | "
@@ -59,7 +63,7 @@ for row in reader:
         datalink_shp = ""
         datalink_osm = ""
     else:
-        f = open("data-norm/norm-20130611/"+code+".csv","rb")
+        f = open("data-norm/norm-" + date + "/"+code+".csv","rb")
         numobj = len(f.readlines()) - 1
         f.close()
         
@@ -98,7 +102,7 @@ for row in reader:
                    cat.decode('utf-8').encode('cp1251'),
                    numobj,
                    style, change,
-                   geo.decode('utf-8').encode('cp1251'),
+                   geo, #.decode('utf-8').encode('cp1251'),
                    datalink,
                    datalink_norm,
                    datalink_shp,
