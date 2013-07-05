@@ -226,7 +226,7 @@ def compare_with_latest(dataset,curdate):
     numrecsN = sum(1 for line in fN)
     
     if os.path.exists(fnP) == False: #first download of the dataset
-        shutil.move(fnN, fnP)
+        shutil.copy(fnN, fnP)
         shutil.copy(fnP,"archive/" + dataset.code + "_" + curdate + ".csv")
         fPz = zipfile.ZipFile(fnPz,'w')
         fPz.write(fnP, compress_type=zipfile.ZIP_DEFLATED)
