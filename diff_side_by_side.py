@@ -101,8 +101,8 @@ def side_by_side_diff(old_text, new_text):
     for entry in yield_open_entry(open_entry):
         yield entry
 
-def generate_html(arr):
-    fon = "test.html"
+def generate_html(arr,prevdate,curdate):
+    fon = "archive/diff_" + prevdate + "_" + curdate + ".html"
     fo = open(fon,"w")
 
     fo.write("""<html lang="en">

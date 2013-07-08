@@ -4,7 +4,7 @@
 # Author: Maxim Dubinin (sim@gis-lab.info)
 # Created: 10:30 01.04.2013
 # Notes: To re-initialize data storage clear contents of _listings/_general.csv and data from /data
-#Usage example: python datamosru_control.py -q -s 625 /usr/local/www/gis-lab/data/data/mos.ru/data
+# Usage example: python datamosru_control.py -q -s 625 /usr/local/www/gis-lab/data/data/mos.ru/data
 # ---------------------------------------------------------------------------
 
 import os,sys
@@ -20,7 +20,7 @@ import twitter
 import zipfile,zlib
 from optparse import OptionParser
 import bitly_api
-import diff_side_by_side
+from diff_side_by_side import side_by_side_diff, generate_html
 
 def log(message,curdate):
     flog = open(wd + "/log.txt","a")
@@ -33,7 +33,7 @@ def twit(message,dataset,allowtwit):
     link = "http://gis-lab.info/data/mos.ru/data/" + dataset.code
     shortlink = bitly.shorten(link)['url'] #urllib2.urlopen("http://tinyurl.com/api-create.php?url=%s" % link)
     if allowtwit == True:
-            status = api.PostUpdate(message.decode("utf-8") + " " + shortlink)
+            status = api.PostUpdate(message.decode("utf-8") + " data: " + shortlink)
 
 def download_list(listingurl,curdate):
 #download current list of datasets
@@ -110,7 +110,7 @@ def full_datasets_list(datasets_current):
             localfile.close()
             
             change_msg = "Новый набор данных (или первая загрузка): " + dataset.description[0:20:].encode("utf-8") + "... ("+ dataset.code + ") "
-            change_msg_tw = "Новые данные: " + dataset.description[0:60:].encode("utf-8") + "... ("+ dataset.code + ") "
+            change_msg_tw = "Новые данные: " + dataset.description[0:50:].encode("utf-8") + "... ("+ dataset.code + ") "
             print(change_msg)
             log(change_msg,curdate)
             twit(change_msg_tw,dataset,allowtwit)
@@ -144,7 +144,7 @@ def removed_datasets_list(datasets_current,datasets_all):
     for dataset in datasets_current:
         pos = [i for i, v in enumerate(datasets_removed) if v[0] == dataset.code]
         if len(pos) != 0: #dataset is present in both current list and removed, meaning it was restored
-            change_msg = "Данные восстановлены " + dataset.description[0:60:].encode("utf-8") + "... ("+ dataset.code.encode("utf-8") + ") "
+            change_msg = "Данные восстановлены " + dataset.description[0:50:].encode("utf-8") + "... ("+ dataset.code.encode("utf-8") + ") "
             print(change_msg)
             log(change_msg,curdate)
             twit(change_msg,dataset,allowtwit)
@@ -171,7 +171,7 @@ def removed_datasets_list(datasets_current,datasets_all):
                 localfile.write(dataset.code.encode("utf-8") + ";" + dataset.geo.encode("utf-8") + ";" + dataset.url.encode("utf-8") + ";" + dataset.downurl.encode("utf-8") + ";" + "\"" + dataset.description.encode("utf-8") + "\"" + ";" + "\"" + dataset.source.encode("utf-8") + "\"" + ";" + "\"" + dataset.cat.encode("utf-8") + "\"" + ";" + curdate + "\n")
                 localfile.close()
                 
-                change_msg = "Данные удалены? " + dataset.description[0:60:].encode("utf-8") + "... ("+ dataset.code.encode("utf-8") + ") "
+                change_msg = "Данные удалены? " + dataset.description[0:50:].encode("utf-8") + "... ("+ dataset.code.encode("utf-8") + ") "
                 print(change_msg)
                 log(change_msg,curdate)
                 twit(change_msg,dataset,allowtwit)
@@ -210,17 +210,6 @@ def savelocal(dataset,curdate):
 
     f.close()
 
-def get_diffs():
-    textBefore = open("testC.csv","r").read().decode("utf-8")
-    textAfter = open("testD.csv","r").read().decode("utf-8")
-
-    arr=[]
-    for str in side_by_side_diff(textBefore,textAfter):
-        arr.append(str)
-
-    generate_html(arr)
-    side_by_side_diff()
-
 def compare_with_latest(dataset,curdate):
 #compare downloaded dataset with its latest version
     os.chdir(dataset.code)
@@ -231,9 +220,17 @@ def compare_with_latest(dataset,curdate):
     fnP = dataset.code + ".csv"
     fnPz = dataset.code + ".zip"
     logf = dataset.code + "_changes.log"
-      
+    #get date pf the last update
+    f = open(logf,"r")
+    fdata = f.readlines()
+    prevdate = fdata[len(fdata)-1].split(",")[0]
+    f.close()
+    
+    
     fN = open(fnN)  #new version
     fNcontents = fN.read().decode("utf-8")
+    fN.close()
+    fN = open(fnN)
     fsN = os.stat(fnN).st_size 
     numfldsN = len(fN.readline().split(";"))
     numrecsN = sum(1 for line in fN)
@@ -251,6 +248,8 @@ def compare_with_latest(dataset,curdate):
 
     fP = open(fnP)  #previous version
     fPcontents = fP.read().decode("utf-8")
+    fP.close()
+    fP = open(fnP)
     fsP = os.stat(fnP).st_size  
     numfldsP = len(fP.readline().split(";"))
     numrecsP = sum(1 for line in fP)
@@ -260,9 +259,11 @@ def compare_with_latest(dataset,curdate):
     
     if fsN != fsP:
         change = True #file size has changed compared to latest copy
-        shortname = dataset.description[0:60:].encode("utf-8") + "... (" + dataset.code.encode("utf-8") + ")"
+        shortname = dataset.description[0:50:].encode("utf-8") + "..(" + dataset.code.encode("utf-8") + ")"
         rec_change_msg = ""
         fld_change_msg = ""
+        difflink = "http://gis-lab.info/data/mos.ru/data/" + dataset.code + "/archive/diff_" + prevdate + "_" + curdate + ".html"
+        diffshortlink = bitly.shorten(difflink)['url'].encode("utf-8")
         
         #check if number of records has changed
         if numrecsN > numrecsP:
@@ -277,16 +278,20 @@ def compare_with_latest(dataset,curdate):
             fld_change_msg = ", поля -" + str(numfldsP - numfldsN)
         
         if rec_change_msg == "" and fld_change_msg == "":
-            change_msg = "Обновление: " + shortname + " изменение содержания"
+            change_msg = "Обновление: " + shortname + " изменение содержания," + " diff: " + diffshortlink
         else:
-            change_msg = "Обновление: " + shortname + rec_change_msg + fld_change_msg
+            change_msg = "Обновление: " + shortname + rec_change_msg + fld_change_msg + "," + " diff: " + diffshortlink
         
         f = open(logf,"a")
         f.write(curdate + "," + str(numfldsN) + "," + str(numrecsN) + "\n")
         f.close()
 
         #get diffs
-        get_diffs(fPcontents,fNcontents)
+        arr=[]
+        for ss in side_by_side_diff(fPcontents,fNcontents):
+            arr.append(ss)
+
+        generate_html(arr,prevdate,curdate)
         
         #log everywhere
         print(change_msg)
