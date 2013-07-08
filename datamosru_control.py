@@ -20,6 +20,7 @@ import twitter
 import zipfile,zlib
 from optparse import OptionParser
 import bitly_api
+import diff_side_by_side
 
 def log(message,curdate):
     flog = open(wd + "/log.txt","a")
@@ -209,6 +210,17 @@ def savelocal(dataset,curdate):
 
     f.close()
 
+def get_diffs():
+    textBefore = open("testC.csv","r").read().decode("utf-8")
+    textAfter = open("testD.csv","r").read().decode("utf-8")
+
+    arr=[]
+    for str in side_by_side_diff(textBefore,textAfter):
+        arr.append(str)
+
+    generate_html(arr)
+    side_by_side_diff()
+
 def compare_with_latest(dataset,curdate):
 #compare downloaded dataset with its latest version
     os.chdir(dataset.code)
@@ -221,6 +233,7 @@ def compare_with_latest(dataset,curdate):
     logf = dataset.code + "_changes.log"
       
     fN = open(fnN)  #new version
+    fNcontents = fN.read().decode("utf-8")
     fsN = os.stat(fnN).st_size 
     numfldsN = len(fN.readline().split(";"))
     numrecsN = sum(1 for line in fN)
@@ -237,6 +250,7 @@ def compare_with_latest(dataset,curdate):
         f.close()
 
     fP = open(fnP)  #previous version
+    fPcontents = fP.read().decode("utf-8")
     fsP = os.stat(fnP).st_size  
     numfldsP = len(fP.readline().split(";"))
     numrecsP = sum(1 for line in fP)
@@ -270,6 +284,9 @@ def compare_with_latest(dataset,curdate):
         f = open(logf,"a")
         f.write(curdate + "," + str(numfldsN) + "," + str(numrecsN) + "\n")
         f.close()
+
+        #get diffs
+        get_diffs(fPcontents,fNcontents)
         
         #log everywhere
         print(change_msg)
