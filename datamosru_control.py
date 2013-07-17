@@ -200,6 +200,7 @@ def savelocal(dataset,curdate):
             print 'Error code: ', e.code
         success = False
         msg = "Failed to load " + dataset.code
+        print msg
         log(msg,curdate)
     else:
         meta = u.info()
@@ -222,7 +223,7 @@ def savelocal(dataset,curdate):
 
         f.close()
     return success
-    
+
 def compare_with_latest(dataset,curdate):
 #compare downloaded dataset with its latest version
     os.chdir(dataset.code)
