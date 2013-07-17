@@ -198,10 +198,10 @@ def savelocal(dataset,curdate):
         elif hasattr(e, 'code'):
             print 'The server couldn\'t fulfill the request.'
             print 'Error code: ', e.code
-        success = False
         msg = "Failed to load " + dataset.code
         print msg
         log(msg,curdate)
+        success = False
     else:
         meta = u.info()
         #meta_len = len(meta.getheaders("Content-Length"))
@@ -382,9 +382,8 @@ if __name__ == '__main__':
                 change = compare_with_latest(dataset,curdate)
         else:
             for dataset in datasets_all:
-                savelocal(dataset,curdate)
-                change = compare_with_latest(dataset,curdate)
-                if change == True: #do postprocessing for changed datasets
-                    print("change")
+                success = savelocal(dataset,curdate)
+                if success == True:
+                    change = compare_with_latest(dataset,curdate)
     else:
         print("Failed to download listing, try again later")
