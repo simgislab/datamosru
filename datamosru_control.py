@@ -189,27 +189,40 @@ def savelocal(dataset,curdate):
     if os.path.exists(dataset.code + "/archive") == False: os.mkdir(dataset.code + "/archive")
     downurl = dataset.downurl.replace("\"","")
     
-    u = urllib2.urlopen(downurl)
-    meta = u.info()
-    #meta_len = len(meta.getheaders("Content-Length"))
-    file_size = int(meta.getheaders("Content-Length")[0])
-    print "Downloading: %s Kb: %s" % (dataset.code, file_size/1024)
-    f = open(dataset.code + "/" + dataset.code + "_temp.csv","wb")
-    file_size_dl = 0
-    block_sz = 8192
-    while True:
-        buffer = u.read(block_sz)
-        if not buffer:
-            break
+    try:
+        u = urllib2.urlopen(downurl)
+    except urllib2.URLError, e:
+        if hasattr(e, 'reason'):
+            print 'We failed to reach a server.'
+            print 'Reason: ', e.reason
+        elif hasattr(e, 'code'):
+            print 'The server couldn\'t fulfill the request.'
+            print 'Error code: ', e.code
+        success = False
+        msg = "Failed to load " + dataset.code
+        log(msg,curdate)
+    else:
+        meta = u.info()
+        #meta_len = len(meta.getheaders("Content-Length"))
+        file_size = int(meta.getheaders("Content-Length")[0])
+        print "Downloading: %s Kb: %s" % (dataset.code, file_size/1024)
+        f = open(dataset.code + "/" + dataset.code + "_temp.csv","wb")
+        file_size_dl = 0
+        block_sz = 8192
+        while True:
+            buffer = u.read(block_sz)
+            if not buffer:
+                break
 
-        file_size_dl += len(buffer)
-        f.write(buffer)
-        status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
-        status = status + chr(8)*(len(status)+1)
-        print status,
+            file_size_dl += len(buffer)
+            f.write(buffer)
+            status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
+            status = status + chr(8)*(len(status)+1)
+            print status,
 
-    f.close()
-
+        f.close()
+    return success
+    
 def compare_with_latest(dataset,curdate):
 #compare downloaded dataset with its latest version
     os.chdir(dataset.code)
@@ -363,8 +376,9 @@ if __name__ == '__main__':
             message = "Processing specific dataset: " + specific_id
             log(message, curdate)
             dataset = datasets_all[[i for i, v in enumerate(datasets_all) if v[0] == specific_id][0]]
-            savelocal(dataset,curdate)
-            change = compare_with_latest(dataset,curdate)
+            success = savelocal(dataset,curdate)
+            if success == True:
+                change = compare_with_latest(dataset,curdate)
         else:
             for dataset in datasets_all:
                 savelocal(dataset,curdate)
