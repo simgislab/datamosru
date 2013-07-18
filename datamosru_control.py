@@ -110,7 +110,7 @@ def full_datasets_list(datasets_current):
             localfile.close()
             
             change_msg = "Новый набор данных (или первая загрузка): " + dataset.description[0:20:].encode("utf-8") + "... ("+ dataset.code + ") "
-            change_msg_tw = "Новые данные: " + dataset.description[0:50:].encode("utf-8") + "... ("+ dataset.code + ") "
+            change_msg_tw = "Новые данные: " + dataset.description[0:twitcharlimit:].encode("utf-8") + "... ("+ dataset.code + ") "
             print(change_msg)
             log(change_msg,curdate)
             twit(change_msg_tw,dataset,allowtwit)
@@ -144,7 +144,7 @@ def removed_datasets_list(datasets_current,datasets_all):
     for dataset in datasets_current:
         pos = [i for i, v in enumerate(datasets_removed) if v[0] == dataset.code]
         if len(pos) != 0: #dataset is present in both current list and removed, meaning it was restored
-            change_msg = "Данные восстановлены " + dataset.description[0:50:].encode("utf-8") + "... ("+ dataset.code.encode("utf-8") + ") "
+            change_msg = "Данные восстановлены " + dataset.description[0:twitcharlimit:].encode("utf-8") + "... ("+ dataset.code.encode("utf-8") + ") "
             print(change_msg)
             log(change_msg,curdate)
             twit(change_msg,dataset,allowtwit)
@@ -171,7 +171,7 @@ def removed_datasets_list(datasets_current,datasets_all):
                 localfile.write(dataset.code.encode("utf-8") + ";" + dataset.geo.encode("utf-8") + ";" + dataset.url.encode("utf-8") + ";" + dataset.downurl.encode("utf-8") + ";" + "\"" + dataset.description.encode("utf-8") + "\"" + ";" + "\"" + dataset.source.encode("utf-8") + "\"" + ";" + "\"" + dataset.cat.encode("utf-8") + "\"" + ";" + curdate + "\n")
                 localfile.close()
                 
-                change_msg = "Данные удалены? " + dataset.description[0:50:].encode("utf-8") + "... ("+ dataset.code.encode("utf-8") + ") "
+                change_msg = "Данные удалены? " + dataset.description[0:twitcharlimit:].encode("utf-8") + "... ("+ dataset.code.encode("utf-8") + ") "
                 print(change_msg)
                 log(change_msg,curdate)
                 twit(change_msg,dataset,allowtwit)
@@ -273,7 +273,7 @@ def compare_with_latest(dataset,curdate):
     
     if fsN != fsP:
         change = True #file size has changed compared to latest copy
-        shortname = dataset.description[0:50:].encode("utf-8") + "..(" + dataset.code.encode("utf-8") + ")"
+        shortname = dataset.description[0:twitcharlimit:].encode("utf-8") + "..(" + dataset.code.encode("utf-8") + ")"
         rec_change_msg = ""
         fld_change_msg = ""
         difflink = "http://gis-lab.info/data/mos.ru/data/" + dataset.code + "/archive/diff_" + prevdate + "_" + curdate + ".html"
@@ -351,6 +351,8 @@ if __name__ == '__main__':
     #get twitter credentials for writing http://twitter.com/datamosru
     consumerkey,consumersecret,accesstokenkey,accesstokensecret = open("twitter-credentials.ini").readline().split(",")
     api = twitter.Api(consumer_key=consumerkey, consumer_secret=consumersecret, access_token_key=accesstokenkey, access_token_secret=accesstokensecret)
+    
+    twitcharlimit = 45
     
     #get bitly credentials for url shortening
     api_user,api_key = open("bitly-credentials.ini").readline().split(",")
