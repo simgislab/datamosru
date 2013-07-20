@@ -109,15 +109,13 @@ def full_datasets_list(datasets_current):
             localfile.write((dataset.code + ";" + dataset.geo + ";" + dataset.url + ";" + dataset.downurl + ";" + "\"" + dataset.description + "\"" + ";" + "\"" + dataset.source + "\"" + ";" + "\"" + dataset.cat + "\"" + ";" + curdate + "\n").encode("utf-8"))
             localfile.close()
             
-            change_msg = u"Новый набор данных (или первая загрузка): " + dataset.description[0:20:] + "... ("+ dataset.code + ") "
-
             str1 = u"Новые данные: "
             str2 = "... ("+ dataset.code + ") "
             twitlimit = 140 - len(str1) - len(str2) - 27
-            change_msg_tw = str1 + dataset.description[0:twitlimit:] + str2
+            change_msg = str1 + dataset.description[0:twitlimit:] + str2
             print(change_msg)
             log(change_msg,curdate)
-            twit(change_msg_tw,dataset,allowtwit)
+            twit(change_msg,dataset,allowtwit)
 
             if os.path.exists(dataset.code) == False: os.mkdir(dataset.code)
             if os.path.exists(dataset.code + "/archive") == False: os.mkdir (dataset.code + "/archive")
@@ -148,7 +146,7 @@ def removed_datasets_list(datasets_current,datasets_all):
     for dataset in datasets_current:
         pos = [i for i, v in enumerate(datasets_removed) if v[0] == dataset.code]
         if len(pos) != 0: #dataset is present in both current list and removed, meaning it was restored
-            str1 = u"Данные восстановлены "
+            str1 = u"Данные восстановлены: "
             str2 = "... ("+ dataset.code + ") "
             twitlimit = 140 - len(str1) - len(str2) - 27
             change_msg = str1 + dataset.description[0:twitlimit:] + str2
