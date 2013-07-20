@@ -113,7 +113,7 @@ def full_datasets_list(datasets_current):
             str2 = "... ("+ dataset.code + ") "
             twitlimit = 140 - len(str1) - len(str2) - 27
             change_msg = str1 + dataset.description[0:twitlimit:] + str2
-            print(change_msg)
+            print(change_msg.encode("utf-8"))
             log(change_msg,curdate)
             twit(change_msg,dataset,allowtwit)
 
@@ -150,7 +150,7 @@ def removed_datasets_list(datasets_current,datasets_all):
             str2 = "... ("+ dataset.code + ") "
             twitlimit = 140 - len(str1) - len(str2) - 27
             change_msg = str1 + dataset.description[0:twitlimit:] + str2
-            print(change_msg)
+            print(change_msg.encode("utf-8"))
             log(change_msg,curdate)
             twit(change_msg,dataset,allowtwit)
 
@@ -180,7 +180,7 @@ def removed_datasets_list(datasets_current,datasets_all):
                 str2 =  "... ("+ dataset.code + ") "
                 twitlimit = 140 - len(str1) - len(str2) - 27
                 change_msg = str1 + dataset.description[0:twitlimit:] + str2
-                print(change_msg)
+                print(change_msg.encode("utf-8"))
                 log(change_msg,curdate)
                 twit(change_msg,dataset,allowtwit)
 
@@ -323,7 +323,7 @@ def compare_with_latest(dataset,curdate):
         generate_html(arr,prevdate,curdate)
         
         #log everywhere
-        print(change_msg)
+        print(change_msg.encode("utf-8"))
         log(change_msg,curdate)
         twit(change_msg,dataset,allowtwit)
         
