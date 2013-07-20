@@ -4,7 +4,7 @@
 # Author: Maxim Dubinin (sim@gis-lab.info)
 # Created: 10:30 01.04.2013
 # Notes: To re-initialize data storage clear contents of _listings/_general.csv and data from /data
-# Usage example: python datamosru_control.py -q -s 625 /usr/local/www/gis-lab/data/data/mos.ru/data
+# Usage example: env/bin/python datamosru_control.py -q -s 625 /usr/local/www/gis-lab/data/data/mos.ru/data
 # ---------------------------------------------------------------------------
 
 import os,sys
@@ -26,14 +26,14 @@ def log(message,curdate):
     flog = open(wd + "/log.txt","a")
     str = curdate + " " + datetime.now().strftime("%H-%M-%S") + ":         "
     str = str + message
-    flog.write(str + "\n")
+    flog.write((str + "\n").encode("utf-8"))
     flog.close()
 
 def twit(message,dataset,allowtwit):
     link = "http://gis-lab.info/data/mos.ru/data/" + dataset.code
     shortlink = bitly.shorten(link)['url'] #urllib2.urlopen("http://tinyurl.com/api-create.php?url=%s" % link)
     if allowtwit == True:
-            status = api.PostUpdate(message.decode("utf-8") + " data: " + shortlink)
+            status = api.PostUpdate(message + " data: " + shortlink)
 
 def download_list(listingurl,curdate):
 #download current list of datasets
@@ -77,7 +77,7 @@ def parse_list(listingurl,curdate):
         source = list(tds[3].strings)[0].strip()
 
         #save to CSV file
-        localfile.write(code.encode("utf-8") + ";" + geo.encode("utf-8") + ";" + url.encode("utf-8") + ";" + downurl.encode("utf-8") + ";" + description.encode("utf-8") + ";" + source.encode("utf-8") + ";" + cat.encode("utf-8") + "\n")
+        localfile.write((code + ";" + geo + ";" + url + ";" + downurl + ";" + description + ";" + source + ";" + cat + "\n").encode("utf-8"))
         
         #save to named tuple
         node = dataset(code,geo,url,downurl,description,source,cat)
@@ -106,11 +106,15 @@ def full_datasets_list(datasets_current):
             #EVENT - dataset added
             #add a record to full datasets list csv
             localfile = open("_listings/_general.csv", 'a')
-            localfile.write(dataset.code.encode("utf-8") + ";" + dataset.geo.encode("utf-8") + ";" + dataset.url.encode("utf-8") + ";" + dataset.downurl.encode("utf-8") + ";" + "\"" + dataset.description.encode("utf-8") + "\"" + ";" + "\"" + dataset.source.encode("utf-8") + "\"" + ";" + "\"" + dataset.cat.encode("utf-8") + "\"" + ";" + curdate + "\n")
+            localfile.write((dataset.code + ";" + dataset.geo + ";" + dataset.url + ";" + dataset.downurl + ";" + "\"" + dataset.description + "\"" + ";" + "\"" + dataset.source + "\"" + ";" + "\"" + dataset.cat + "\"" + ";" + curdate + "\n").encode("utf-8"))
             localfile.close()
             
-            change_msg = "Новый набор данных (или первая загрузка): " + dataset.description[0:20:].encode("utf-8") + "... ("+ dataset.code + ") "
-            change_msg_tw = "Новые данные: " + dataset.description[0:twitcharlimit:].encode("utf-8") + "... ("+ dataset.code + ") "
+            change_msg = u"Новый набор данных (или первая загрузка): " + dataset.description[0:20:] + "... ("+ dataset.code + ") "
+
+            str1 = u"Новые данные: "
+            str2 = "... ("+ dataset.code + ") "
+            twitlimit = 140 - len(str1) - len(str2) - 27
+            change_msg_tw = str1 + dataset.description[0:twitlimit:] + str2
             print(change_msg)
             log(change_msg,curdate)
             twit(change_msg_tw,dataset,allowtwit)
@@ -144,7 +148,10 @@ def removed_datasets_list(datasets_current,datasets_all):
     for dataset in datasets_current:
         pos = [i for i, v in enumerate(datasets_removed) if v[0] == dataset.code]
         if len(pos) != 0: #dataset is present in both current list and removed, meaning it was restored
-            change_msg = "Данные восстановлены " + dataset.description[0:twitcharlimit:].encode("utf-8") + "... ("+ dataset.code.encode("utf-8") + ") "
+            str1 = u"Данные восстановлены "
+            str2 = "... ("+ dataset.code + ") "
+            twitlimit = 140 - len(str1) - len(str2) - 27
+            change_msg = str1 + dataset.description[0:twitlimit:] + str2
             print(change_msg)
             log(change_msg,curdate)
             twit(change_msg,dataset,allowtwit)
@@ -168,10 +175,13 @@ def removed_datasets_list(datasets_current,datasets_all):
                 #EVENT - dataset removed
                 #add a record to list of removed.csv
                 localfile = open("_listings/_removed.csv", 'a')
-                localfile.write(dataset.code.encode("utf-8") + ";" + dataset.geo.encode("utf-8") + ";" + dataset.url.encode("utf-8") + ";" + dataset.downurl.encode("utf-8") + ";" + "\"" + dataset.description.encode("utf-8") + "\"" + ";" + "\"" + dataset.source.encode("utf-8") + "\"" + ";" + "\"" + dataset.cat.encode("utf-8") + "\"" + ";" + curdate + "\n")
+                localfile.write((dataset.code + ";" + dataset.geo + ";" + dataset.url + ";" + dataset.downurl + ";" + "\"" + dataset.description + "\"" + ";" + "\"" + dataset.source + "\"" + ";" + "\"" + dataset.cat + "\"" + ";" + curdate + "\n").encode("utf-8"))
                 localfile.close()
                 
-                change_msg = "Данные удалены? " + dataset.description[0:twitcharlimit:].encode("utf-8") + "... ("+ dataset.code.encode("utf-8") + ") "
+                str1 = u"Данные удалены? "
+                str2 =  "... ("+ dataset.code + ") "
+                twitlimit = 140 - len(str1) - len(str2) - 27
+                change_msg = str1 + dataset.description[0:twitlimit:] + str2
                 print(change_msg)
                 log(change_msg,curdate)
                 twit(change_msg,dataset,allowtwit)
@@ -273,28 +283,35 @@ def compare_with_latest(dataset,curdate):
     
     if fsN != fsP:
         change = True #file size has changed compared to latest copy
-        shortname = dataset.description[0:twitcharlimit:].encode("utf-8") + "..(" + dataset.code.encode("utf-8") + ")"
         rec_change_msg = ""
         fld_change_msg = ""
         difflink = "http://gis-lab.info/data/mos.ru/data/" + dataset.code + "/archive/diff_" + prevdate + "_" + curdate + ".html"
-        diffshortlink = bitly.shorten(difflink)['url'].encode("utf-8")
+        diffshortlink = bitly.shorten(difflink)['url']
         
         #check if number of records has changed
         if numrecsN > numrecsP:
-            rec_change_msg = ", записи +" + str(numrecsN - numrecsP)
+            rec_change_msg = u", записи +" + str(numrecsN - numrecsP)
         elif numrecsN < numrecsP:
-            rec_change_msg = ", записи -" + str(numrecsP - numrecsN)
+            rec_change_msg = u", записи -" + str(numrecsP - numrecsN)
         
         #check if number of fields has changed
         if numfldsN > numfldsP:
-            fld_change_msg = ", поля +" + str(numfldsN - numfldsP)
+            fld_change_msg = u", поля +" + str(numfldsN - numfldsP)
         elif numfldsN < numfldsP:
-            fld_change_msg = ", поля -" + str(numfldsP - numfldsN)
+            fld_change_msg = u", поля -" + str(numfldsP - numfldsN)
         
+        str1 = u"Обновление: "
+        str2 = u" изменение содержания"
+        str3 = rec_change_msg + fld_change_msg
+        str4 = ", " + "diff: " + diffshortlink
         if rec_change_msg == "" and fld_change_msg == "":
-            change_msg = "Обновление: " + shortname + " изменение содержания," + " diff: " + diffshortlink
+            twitlimit = 140 - len(str1) - len(str2) - len(str4) - 27
+            shortname = dataset.description[0:twitlimit:] + "..(" + dataset.code + ")"
+            change_msg = str1 + shortname + str2 + str4
         else:
-            change_msg = "Обновление: " + shortname + rec_change_msg + fld_change_msg + "," + " diff: " + diffshortlink
+            twitlimit = 140 - len(str1) - len(str3) - len(str4) - 27
+            shortname = dataset.description[0:twitlimit:] + "..(" + dataset.code + ")"
+            change_msg = str1 + shortname + str3 + str4
         
         f = open(logf,"a")
         f.write(curdate + "," + str(numfldsN) + "," + str(numrecsN) + "\n")
@@ -351,8 +368,6 @@ if __name__ == '__main__':
     #get twitter credentials for writing http://twitter.com/datamosru
     consumerkey,consumersecret,accesstokenkey,accesstokensecret = open("twitter-credentials.ini").readline().split(",")
     api = twitter.Api(consumer_key=consumerkey, consumer_secret=consumersecret, access_token_key=accesstokenkey, access_token_secret=accesstokensecret)
-    
-    twitcharlimit = 40
     
     #get bitly credentials for url shortening
     api_user,api_key = open("bitly-credentials.ini").readline().split(",")
