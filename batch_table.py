@@ -1,5 +1,7 @@
 #-*- encoding: utf-8 -*-
-#python table.py >table
+#Usage example: 
+#   lin: env/bin/python batch_table.py
+#   win: env\Scripts\python batch_table.py
 
 import csv
 import os
@@ -30,7 +32,27 @@ fo.write("""
 ! | Изменение
 ! | Геоданные
 ! | Оригинал
-! | Данные\n""")
+! | Данные
+|-
+| 
+| Все данные
+| Все
+| 
+| 
+| 
+| 
+| [http://gis-lab.info/data/mos.ru/csv.7z csv]
+| [http://gis-lab.info/data/mos.ru/norm.7z csv_norm]<br>[http://gis-lab.info/data/mos.ru/shp.7z shp]<br>[http://gis-lab.info/data/mos.ru/osm.7z osm]
+|-
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| \n""")
 
 first = True
 for row in reader:
