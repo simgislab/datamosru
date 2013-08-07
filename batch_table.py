@@ -10,8 +10,8 @@ import urllib2
 f = "_general.csv"
 f = urllib2.urlopen("http://gis-lab.info/data/mos.ru/data/_listings/_general.csv")
 reader = csv.reader(f, delimiter=";" )
-date = "20130626"
-date_prev = "20130611"
+date = "20130806"
+date_prev = "20130626"
 
 fon = "table.wiki"
 fo = open(fon,"w")
@@ -32,6 +32,7 @@ fo.write("""
 ! | Изменение
 ! | Геоданные
 ! | Оригинал
+! | Версии
 ! | Данные
 |-
 | 
@@ -40,8 +41,8 @@ fo.write("""
 | 
 | 
 | 
-| 
 | [http://gis-lab.info/data/mos.ru/csv.7z csv]
+|
 | [http://gis-lab.info/data/mos.ru/norm.7z csv_norm]<br>[http://gis-lab.info/data/mos.ru/shp.7z shp]<br>[http://gis-lab.info/data/mos.ru/osm.7z osm]
 |-
 | 
@@ -65,6 +66,7 @@ for row in reader:
     datalink_norm = "[http://gis-lab.info/data/mos.ru/" + code + "_norm.7z csv_norm]"
     datalink_shp = "[http://gis-lab.info/data/mos.ru/" + code + "_shp.7z shp]"
     datalink_osm = "[http://gis-lab.info/data/mos.ru/" + code + "_osm.7z osm]"
+    versions = "[http://gis-lab.info/data/mos.ru/data/" + code + "/archive/ csv]" + "<br>" + "[http://gis-lab.info/data/mos.ru/data/" + code + "/" +code + "_changes.log log]"
     
     #don't gen shp link for non-geo files
     if geo == "no":
@@ -118,6 +120,7 @@ for row in reader:
 | %s%s
 | %s
 | %s
+| %s
 | %s<br>%s<br>%s
 """ % (code,
                    descr,
@@ -126,6 +129,7 @@ for row in reader:
                    style, change,
                    geo, #.decode('utf-8').encode('cp1251'),
                    datalink,
+                   versions,
                    datalink_norm,
                    datalink_shp,
                    datalink_osm))

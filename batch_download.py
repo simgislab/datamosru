@@ -5,7 +5,8 @@
 # Created: 10:30 01.2.2013
 # About: Download all Moscow city data using list updated by datamosru_control.py
 # Notes: 
-# Usage example: python batch_download.py
+# Usage example: env/bin/python batch_download.py
+#            or: env\Scripts\python batch_download.py
 # ---------------------------------------------------------------------------
 
 import urllib2

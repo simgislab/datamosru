@@ -36,6 +36,7 @@ def subst(ss):
         ind = infields.index(field.upper())
         outfield = outfields[ind]
         ss = ss.replace(field + ";",outfield + ";")
+        ss = ss.replace(field + "\n",outfield + "\n")
         ss = ss.replace(field + "\r\n",outfield + "\r\n")
         del infields[ind]
         del outfields[ind]

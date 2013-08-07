@@ -5,6 +5,7 @@
 # Created: 10:30 01.04.2013
 # Notes: To re-initialize data storage clear contents of _listings/_general.csv and data from /data
 # Usage example: env/bin/python datamosru_control.py -q -s 625 /usr/local/www/gis-lab/data/data/mos.ru/data
+#            or: env\Scripts\python datamosru_control.py -q -s 625 /usr/local/www/gis-lab/data/data/mos.ru/data
 # ---------------------------------------------------------------------------
 
 import os,sys

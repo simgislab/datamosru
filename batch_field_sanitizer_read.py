@@ -5,6 +5,7 @@
 # Author: Maxim Dubinin (sim@gis-lab.info)
 # Created: 23:29 11.02.2013
 # More: http://gis-lab.info/forum/viewtopic.php?f=17&t=11387&p=71031#p71031
+# Usage example: env\Scripts\python batch_field_sanitizer_read.py d:\Programming\Python\datamosru\data\ fields.csv yes yes
 # ---------------------------------------------------------------------------
 
 import glob
@@ -16,7 +17,6 @@ from string import maketrans
 def usage():
   '''Show usage synopsis.
   '''
-  #field_sanitizer_read.py d:\Programming\Python\data.mos.ru\data\ fields.csv yes yes
   print 'Usage: field_sanitizer_read.py folder output_fields_file translit update'
   sys.exit( 1 )
 
