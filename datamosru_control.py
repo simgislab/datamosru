@@ -308,7 +308,7 @@ def compare_with_latest(dataset,curdate):
             shortname = dataset.description[0:twitlimit:] + "..(" + dataset.code + ")"
             change_msg = str1 + shortname + str2 + str4
         else:
-            twitlimit = 140 - len(str1) - len(str3) - len(str4) - 50
+            twitlimit = 140 - len(str1) - len(str3) - len(str4) - 27 - 7    #7 accounts for ..(520)
             shortname = dataset.description[0:twitlimit:] + "..(" + dataset.code + ")"
             change_msg = str1 + shortname + str3 + str4
         
