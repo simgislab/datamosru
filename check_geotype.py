@@ -15,7 +15,7 @@ fieldnames = ("CODE","DD", "MERCATOR", "LOCAL", "WKT", "BLANK")
 csvwriter_geo = csv.DictWriter(output, fieldnames=fieldnames)
 csvwriter_geo.writerow(dict((fn,fn) for fn in fieldnames))
 
-wd = "d:/Programming/Python/data.mos.ru/data-norm"
+wd = "d:/Programming/Python/datamosru/data-norm"
 os.chdir(wd)
 
 inputs = glob.glob("*.csv")
