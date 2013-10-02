@@ -5,6 +5,7 @@
 # Created: 23:46 12.02.2013
 # Updated: 14:49 13.02.2013
 # More: http://gis-lab.info/forum/viewtopic.php?f=17&t=11387&p=71031#p71031
+# Usage example: env\Scripts\python batch_field_sanitizer_write.py data\ data-norm\ fields.csv
 # ---------------------------------------------------------------------------
 
 import glob
@@ -15,8 +16,7 @@ import codecs
 def usage():
   '''Show usage synopsis.
   '''
-  #python field_sanitizer_write.py data\ data-norm\ fields.csv
-  print 'Usage: field_sanitizer_write.py input_folder output_folder fieldsfile'
+  print 'Usage: batch_field_sanitizer_write.py input_folder output_folder fieldsfile'
   sys.exit( 1 )
 
 def find(lst, predicate):
