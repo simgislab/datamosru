@@ -64,19 +64,20 @@ def parse_list(listingurl,curdate):
     datasets_current = []
     dataset = namedtuple('dataset', 'code,geo,lastgeo,url,downurl,description,source,cat')
     soup = BeautifulSoup(''.join(lf.readlines()))
-    table = soup.find("table", { "class" : "data_table" })
-    trs = table.find("tbody").findAll("tr")
-    for tr in trs:
-        tds = tr.findAll("td")
-        url = tds[1].find('a')['href']
+    items = soup.findAll("div", { "class" : "item" })
+    catsrc = soup.findAll("div", { "class" : "small-11 small-offset-1 medium-3 medium-offset-0 columns" })
+    i = 0
+    for item in items:
+        url = item.find('a')['href']
         code = url.replace("/datasets/","").split("_")[0]
         geo = ""
         lastgeo = ""
         url = "http://data.mos.ru" + url
         downurl = "http://data.mos.ru/datasets/download/" + code + "/"
-        description = list(tds[1].find('div').strings)[0].strip()
-        cat = list(tds[2].strings)[0].strip()
-        source = list(tds[3].strings)[0].strip()
+        description = item.find('a', { "class" : "title" }).strings.next()
+        cat = catsrc[i].strings.next()
+        source = catsrc[i+1].strings.next()
+        i = i + 2
 
         #save to CSV file
         localfile.write((code + ";" + geo + ";" + lastgeo + ";" + url + ";" + downurl + ";" + description + ";" + source + ";" + cat + "\n").encode("utf-8"))
