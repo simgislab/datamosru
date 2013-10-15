@@ -253,7 +253,10 @@ def compare_with_latest(dataset,curdate):
     
     
     fN = open(fnN)  #new version
-    fNcontents = fN.read().decode("utf-8")
+    try:
+        fNcontents = fN.read().decode("utf-8")
+    except:
+        fNcontents = fN.read().decode("cp1251")
     fN.close()
     fN = open(fnN)
     fsN = os.stat(fnN).st_size 
@@ -270,9 +273,12 @@ def compare_with_latest(dataset,curdate):
         f = open(logf,"a")
         f.write(curdate + "," + str(numfldsN) + "," + str(numrecsN) + "\n")
         f.close()
-
+    
     fP = open(fnP)  #previous version
-    fPcontents = fP.read().decode("utf-8")
+    try:
+        fPcontents = fP.read().decode("utf-8")
+    except:
+        fPcontents = fP.read().decode("cp1251")
     fP.close()
     fP = open(fnP)
     fsP = os.stat(fnP).st_size  
