@@ -114,7 +114,7 @@ def full_datasets_list(datasets_current):
             
             str1 = u"Новые данные: "
             str2 = "... ("+ dataset.code + ") "
-            twitlimit = 140 - len(str1) - len(str2) - 27
+            twitlimit = 140 - len(str1) - len(str2) - 37
             change_msg = str1 + dataset.description[0:twitlimit:] + str2
             print(change_msg.encode("utf-8"))
             log(change_msg,curdate)
