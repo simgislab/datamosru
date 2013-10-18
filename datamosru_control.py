@@ -204,12 +204,10 @@ def savelocal(dataset,curdate):
         u = urllib2.urlopen(downurl)
     except urllib2.URLError, e:
         if hasattr(e, 'reason'):
-            print 'We failed to reach a server.'
-            print 'Reason: ', e.reason
+            errmsg = 'We failed to reach a server. ' + 'Reason: ', e.reason
         elif hasattr(e, 'code'):
-            print 'The server couldn\'t fulfill the request.'
-            print 'Error code: ', e.code
-        msg = "Failed to load " + dataset.code
+            errmsg ='The server couldn\'t fulfill the request. ' + 'Error code: ', e.code
+        msg = "Failed to load " + dataset.code + "." + errmsg
         print msg
         log(msg,curdate)
         success = False
