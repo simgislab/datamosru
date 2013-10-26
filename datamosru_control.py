@@ -44,7 +44,7 @@ def twit(message,dataset,allowtwit):
     shortlink = bitly.shorten(link)['url'] #urllib2.urlopen("http://tinyurl.com/api-create.php?url=%s" % link)
     if allowtwit == True:
         final_msg = message + " data: " + shortlink
-        print("twit length" + str(len(final_msg)))
+        print("twit length: " + str(len(final_msg)))
         status = api.PostUpdate(final_msg)
 
 def download_list(listingurl,curdate):
