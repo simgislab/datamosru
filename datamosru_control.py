@@ -30,7 +30,7 @@ def log(message,curdate):
     flog.write((str + "\n").encode("utf-8"))
     flog.close()
 
-def add_struct_log(dataset.code,change_type):
+def add_struct_log(code,change_type):
     f_structlog = open("log_struct.csv","wb")
     csvwriter_structlog = csv.DictWriter(f_structlog)
     csvwriter_structlog.writerow(dict(CODE=dataset.code,
