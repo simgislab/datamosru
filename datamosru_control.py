@@ -334,7 +334,7 @@ def compare_with_latest(dataset,curdate):
             change_msg = str1 + shortname + str3 + str4
         
         f = open(logf,"a")
-        f.write(curdate + "," + str(numfldsN) + "," + str(numrecsN) + "\n")
+        f.write(curdate + ";" + str(numfldsN) + ";" + str(numrecsN) + "\n")
         f.close()
 
         #get diffs
