@@ -43,7 +43,9 @@ def twit(message,dataset,allowtwit):
     link = "http://gis-lab.info/data/mos.ru/data/" + dataset.code
     shortlink = bitly.shorten(link)['url'] #urllib2.urlopen("http://tinyurl.com/api-create.php?url=%s" % link)
     if allowtwit == True:
-            status = api.PostUpdate(message + " data: " + shortlink)
+        final_msg = message + " data: " + shortlink
+        print("twit length" + str(len(final_msg)))
+        status = api.PostUpdate(final_msg)
 
 def download_list(listingurl,curdate):
 #download current list of datasets
