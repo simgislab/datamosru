@@ -325,7 +325,7 @@ def compare_with_latest(dataset,curdate):
         str3 = rec_change_msg + fld_change_msg
         str4 = ", diff: " + diffshortlink
         if rec_change_msg == "" and fld_change_msg == "":
-            twitlimit = 140 - len(str1) - len(str2) - len(str4) - 33
+            twitlimit = 140 - len(str1) - len(str2) - len(str4) - 27 - 20
             shortname = dataset.description[0:twitlimit:].replace('"','') + "..(" + dataset.code + ")"
             change_msg = str1 + shortname + str2 + str4
         else:
