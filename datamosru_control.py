@@ -30,6 +30,15 @@ def log(message,curdate):
     flog.write((str + "\n").encode("utf-8"))
     flog.close()
 
+def add_struct_log(dataset.code,change_type):
+    f_structlog = open("log_struct.csv","wb")
+    csvwriter_structlog = csv.DictWriter(f_structlog)
+    csvwriter_structlog.writerow(dict(CODE=dataset.code,
+                                      CHANGETYPE=changetype,
+                                      DATETIME=datetime.now().strftime("%H-%M-%S")
+                                      ))
+    csvwriter_structlog.close()
+
 def twit(message,dataset,allowtwit):
     link = "http://gis-lab.info/data/mos.ru/data/" + dataset.code
     shortlink = bitly.shorten(link)['url'] #urllib2.urlopen("http://tinyurl.com/api-create.php?url=%s" % link)
