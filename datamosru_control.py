@@ -145,6 +145,32 @@ def full_datasets_list(datasets_current):
              
     return datasets_all
 
+def add_removed_datasets_list(dataset): 
+    localfile = open("_listings/removed.csv", 'a')
+    localfile.write((dataset.code + ";" + dataset.geo + ";" + dataset.lastgeo + ";" + dataset.url + ";" + dataset.downurl + ";" + "\"" + dataset.description + "\"" + ";" + "\"" + dataset.source + "\"" + ";" + "\"" + dataset.cat + "\"" + ";" + curdate + "\n").encode("utf-8"))
+    localfile.close()
+    
+    str1 = u"Данные недоступны. "
+    str2 =  "... ("+ dataset.code + ") "
+    twitlimit = 140 - len(str1) - len(str2) - 27
+    change_msg = str1 + dataset.description[0:twitlimit:] + str2
+    print(change_msg.encode("utf-8"))
+    log(change_msg,curdate)
+    twit(change_msg,dataset,allowtwit)
+            
+            
+    
+def removed_datasets_list():
+    localfile = codecs.open("_listings/_removed.csv", 'rb', 'utf-8')
+    datasets_removed = []
+    dataset = namedtuple('dataset', 'code,geo,lastgeo,url,downurl,description,source,cat,added')
+    strs = localfile.readlines()[1:]
+    localfile.close()
+    for str in strs:
+        code,geo,lastgeo,url,downurl,description,source,cat,added = str.split(";")
+        node = dataset(code,geo,lastgeo,url,downurl,description,source,cat.strip(),added)
+        datasets_removed.append(node)
+    
 def hidden_datasets_list(datasets_current,datasets_all):
     localfile = codecs.open("_listings/_hidden.csv", 'rb', 'utf-8')
     datasets_hidden = []
@@ -218,6 +244,10 @@ def savelocal(dataset,curdate):
             errmsg = 'We failed to reach a server. ' + 'Reason: ' + str(e.reason)
         elif hasattr(e, 'code'):
             errmsg ='The server couldn\'t fulfill the request. ' + 'Error code: ' + str(e.code)
+        
+        pos = [i for i, v in enumerate(datasets_hidden) if v[0] == dataset.code]
+        if len(pos) == 0: #dataset is not present in the list of removed yet, add to list and notify
+            add_removed_datasets_list(dataset,datasets_removed)
         msg = "Failed to load " + dataset.code + "." + errmsg
         print msg
         log(msg,curdate)
@@ -410,6 +440,7 @@ if __name__ == '__main__':
         datasets_current = parse_list(listingurl,curdate)
         datasets_all = full_datasets_list(datasets_current)
         datasets_hidden = hidden_datasets_list(datasets_current,datasets_all)
+        datasets_removed = removed_datasets_list()
         if specific_id is not None:
             message = "Processing specific dataset: " + specific_id
             log(message, curdate)
