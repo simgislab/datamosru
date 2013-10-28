@@ -145,21 +145,21 @@ def full_datasets_list(datasets_current):
              
     return datasets_all
 
-def removed_datasets_list(datasets_current,datasets_all):
-    localfile = codecs.open("_listings/_removed.csv", 'rb', 'utf-8')
-    datasets_removed = []
+def hidden_datasets_list(datasets_current,datasets_all):
+    localfile = codecs.open("_listings/_hidden.csv", 'rb', 'utf-8')
+    datasets_hidden = []
     dataset = namedtuple('dataset', 'code,geo,lastgeo,url,downurl,description,source,cat,added')
     strs = localfile.readlines()[1:]
     localfile.close()
     for str in strs:
         code,geo,lastgeo,url,downurl,description,source,cat,added = str.split(";")
         node = dataset(code,geo,lastgeo,url,downurl,description,source,cat.strip(),added)
-        datasets_removed.append(node)
+        datasets_hidden.append(node)
 
     #TODO: handle datasets that were restored
     for dataset in datasets_current:
-        pos = [i for i, v in enumerate(datasets_removed) if v[0] == dataset.code]
-        if len(pos) != 0: #dataset is present in both current list and removed, meaning it was restored
+        pos = [i for i, v in enumerate(datasets_hidden) if v[0] == dataset.code]
+        if len(pos) != 0: #dataset is present in both current list and hidden, meaning it was restored
             str1 = u"Данные восстановлены: "
             str2 = "... ("+ dataset.code + ") "
             twitlimit = 140 - len(str1) - len(str2) - 27
@@ -168,29 +168,29 @@ def removed_datasets_list(datasets_current,datasets_all):
             log(change_msg,curdate)
             twit(change_msg,dataset,allowtwit)
 
-            #remove restored dataset from the list of removed, need to edit CSV, otherwise it will keep twiting that the dataset set was restored after every update
-            localfile = codecs.open("_listings/_removed.csv", 'rb', 'utf-8')
-            tempfile = codecs.open("_listings/_removed_temp.csv", 'wb', 'utf-8')
+            #remove restored dataset from the list of hidden, need to edit CSV, otherwise it will keep twiting that the dataset set was restored after every update
+            localfile = codecs.open("_listings/_hidden.csv", 'rb', 'utf-8')
+            tempfile = codecs.open("_listings/_hidden_temp.csv", 'wb', 'utf-8')
             for row in localfile.readlines():
                 if not row.startswith(dataset.code):
                     tempfile.write(row)
             tempfile.close()
-            shutil.move("_listings/_removed_temp.csv", "_listings/_removed.csv")
+            shutil.move("_listings/_hidden_temp.csv", "_listings/_hidden.csv")
 
 
-    #check for datasets removed from current list compared to general list
+    #check for datasets hidden from current list compared to general list
     for dataset in datasets_all: 
         pos = [i for i, v in enumerate(datasets_current) if v[0] == dataset.code]
-        if len(pos) == 0: #Dataset is missing in current list, i.e. dataset is removed
-            pos = [i for i, v in enumerate(datasets_removed) if v[0] == dataset.code]
+        if len(pos) == 0: #Dataset is missing in current list, i.e. dataset is hidden
+            pos = [i for i, v in enumerate(datasets_hidden) if v[0] == dataset.code]
             if len(pos) == 0: #missed dataset was not already announced (otherwise do nothing)
-                #EVENT - dataset removed
-                #add a record to list of removed.csv
-                localfile = open("_listings/_removed.csv", 'a')
+                #EVENT - dataset hidden
+                #add a record to list of hidden.csv
+                localfile = open("_listings/_hidden.csv", 'a')
                 localfile.write((dataset.code + ";" + dataset.geo + ";" + dataset.lastgeo + ";" + dataset.url + ";" + dataset.downurl + ";" + "\"" + dataset.description + "\"" + ";" + "\"" + dataset.source + "\"" + ";" + "\"" + dataset.cat + "\"" + ";" + curdate + "\n").encode("utf-8"))
                 localfile.close()
                 
-                str1 = u"Данные удалены? "
+                str1 = u"Данные скрыты. "
                 str2 =  "... ("+ dataset.code + ") "
                 twitlimit = 140 - len(str1) - len(str2) - 27
                 change_msg = str1 + dataset.description[0:twitlimit:] + str2
@@ -198,13 +198,13 @@ def removed_datasets_list(datasets_current,datasets_all):
                 log(change_msg,curdate)
                 twit(change_msg,dataset,allowtwit)
 
-                #add removed dataset to the list of removed datasets as well
+                #add hidden dataset to the list of hidden datasets as well
                 datasetn = namedtuple('dataset', 'code,geo,lastgeo,url,downurl,description,source,cat,added')
                 node = datasetn(dataset.code,dataset.geo,dataset.lastgeo,dataset.url,dataset.downurl,dataset.description,dataset.source,dataset.cat.strip(),curdate)
-                datasets_removed.insert(0,node)
+                datasets_hidden.insert(0,node)
 
 
-    return datasets_removed
+    return datasets_hidden
 
 def savelocal(dataset,curdate):
     if os.path.exists(dataset.code) == False: os.mkdir(dataset.code)
@@ -409,7 +409,7 @@ if __name__ == '__main__':
         #os.chdir("data")
         datasets_current = parse_list(listingurl,curdate)
         datasets_all = full_datasets_list(datasets_current)
-        datasets_removed = removed_datasets_list(datasets_current,datasets_all)
+        datasets_hidden = hidden_datasets_list(datasets_current,datasets_all)
         if specific_id is not None:
             message = "Processing specific dataset: " + specific_id
             log(message, curdate)
