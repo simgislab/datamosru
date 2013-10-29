@@ -243,7 +243,7 @@ def savelocal(dataset,curdate):
         elif hasattr(e, 'code'):
             errmsg ='The server couldn\'t fulfill the request. ' + 'Error code: ' + str(e.code)
         
-        pos = [i for i, v in enumerate(datasets_hidden) if v[0] == dataset.code]
+        pos = [i for i, v in enumerate(datasets_removed) if v[0] == int(dataset.code)]
         if len(pos) == 0: #dataset is not present in the list of removed yet, add to list and notify
             add_removed_datasets_list(dataset)
         msg = "Failed to load " + dataset.code + ". " + errmsg
