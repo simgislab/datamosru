@@ -157,8 +157,6 @@ def add_removed_datasets_list(dataset):
     print(change_msg.encode("utf-8"))
     log(change_msg,curdate)
     twit(change_msg,dataset,allowtwit)
-            
-            
     
 def removed_datasets_list():
     localfile = codecs.open("_listings/_removed.csv", 'rb', 'utf-8')
@@ -247,8 +245,8 @@ def savelocal(dataset,curdate):
         
         pos = [i for i, v in enumerate(datasets_hidden) if v[0] == dataset.code]
         if len(pos) == 0: #dataset is not present in the list of removed yet, add to list and notify
-            add_removed_datasets_list(dataset,datasets_removed)
-        msg = "Failed to load " + dataset.code + "." + errmsg
+            add_removed_datasets_list(dataset)
+        msg = "Failed to load " + dataset.code + ". " + errmsg
         print msg
         log(msg,curdate)
         success = False
