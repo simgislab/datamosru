@@ -17,8 +17,12 @@ fc = csv.DictReader(u,delimiter=";")
 
 for row in fc:
     url = row['URLDOWN']
-    print(url)
-    remotefile = urllib2.urlopen(url)
-    localfile = open("data/" + row['CODE'] + '.csv', 'wb')
-    localfile.write(remotefile.read())
-    localfile.close()
+    try:
+        remotefile = urllib2.urlopen(url)
+        localfile = open("data/" + row['CODE'] + '.csv', 'wb')
+        localfile.write(remotefile.read())
+        localfile.close()
+        print(url)
+    except:
+        message = row['CODE'] + " failed to load"
+        print(message)
