@@ -146,17 +146,35 @@ def full_datasets_list(datasets_current):
     return datasets_all
 
 def add_removed_datasets_list(dataset): 
-    localfile = open("_listings/removed.csv", 'a')
+    localfile = open("_listings/_removed.csv", 'a')
     localfile.write((dataset.code + ";" + dataset.geo + ";" + dataset.lastgeo + ";" + dataset.url + ";" + dataset.downurl + ";" + "\"" + dataset.description + "\"" + ";" + "\"" + dataset.source + "\"" + ";" + "\"" + dataset.cat + "\"" + ";" + curdate + "\n").encode("utf-8"))
     localfile.close()
     
     str1 = u"Данные недоступны. "
     str2 =  "... ("+ dataset.code + ") "
-    twitlimit = 140 - len(str1) - len(str2) - 27
+    twitlimit = 140 - len(str1) - len(str2) - 27 - 20
     change_msg = str1 + dataset.description[0:twitlimit:] + str2
     print(change_msg.encode("utf-8"))
     log(change_msg,curdate)
     twit(change_msg,dataset,allowtwit)
+    
+def del_removed_datasets_list(dataset): 
+    localfile = codecs.open("_listings/_removed.csv", 'rb', 'utf-8')
+    tempfile = codecs.open("_listings/_removed_temp.csv", 'wb', 'utf-8')
+    for row in localfile.readlines():
+        if not row.startswith(dataset.code):
+            tempfile.write(row)
+    tempfile.close()
+    shutil.move("_listings/_removed_temp.csv", "_listings/_removed.csv")
+    
+    str1 = u"Данные восстановлены. "
+    str2 =  "... ("+ dataset.code + ") "
+    twitlimit = 140 - len(str1) - len(str2) - 27 - 20
+    change_msg = str1 + dataset.description[0:twitlimit:] + str2
+    print(change_msg.encode("utf-8"))
+    log(change_msg,curdate)
+    twit(change_msg,dataset,allowtwit)
+
     
 def removed_datasets_list():
     localfile = codecs.open("_listings/_removed.csv", 'rb', 'utf-8')
@@ -168,6 +186,8 @@ def removed_datasets_list():
         code,geo,lastgeo,url,downurl,description,source,cat,added = str.split(";")
         node = dataset(code,geo,lastgeo,url,downurl,description,source,cat.strip(),added)
         datasets_removed.append(node)
+    
+    return datasets_removed
     
 def hidden_datasets_list(datasets_current,datasets_all):
     localfile = codecs.open("_listings/_hidden.csv", 'rb', 'utf-8')
@@ -237,14 +257,18 @@ def savelocal(dataset,curdate):
     
     try:
         u = urllib2.urlopen(downurl)
+        pos = [i for i, v in enumerate(datasets_removed) if v[0] == dataset.code]
+        if len(pos) != 0: #dataset was present in the list of removed, but it is accessible again, so, remove it from the list
+            del_removed_datasets_list(dataset)
+        
     except urllib2.URLError, e:
         if hasattr(e, 'reason'):
             errmsg = 'We failed to reach a server. ' + 'Reason: ' + str(e.reason)
         elif hasattr(e, 'code'):
             errmsg ='The server couldn\'t fulfill the request. ' + 'Error code: ' + str(e.code)
         
-        pos = [i for i, v in enumerate(datasets_removed) if v[0] == int(dataset.code)]
-        if len(pos) == 0: #dataset is not present in the list of removed yet, add to list and notify
+        pos = [i for i, v in enumerate(datasets_removed) if v[0] == dataset.code]
+        if len(pos) == 0: #if the dataset is not present in the list of removed yet, add to the list and notify
             add_removed_datasets_list(dataset)
         msg = "Failed to load " + dataset.code + ". " + errmsg
         print msg
