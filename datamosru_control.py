@@ -309,7 +309,7 @@ def compare_with_latest(dataset,curdate):
     #get date pf the last update
     f = open(logf,"r")
     fdata = f.readlines()
-    prevdate = fdata[len(fdata)-1].split(",")[0]
+    prevdate = fdata[len(fdata)-1].split(";")[0]
     f.close()
     
     
