@@ -75,7 +75,11 @@ if __name__ == '__main__':
     fields = []
     for fn in files:
         print("Processing....: " + fn)
-        fi = codecs.open(fn,"r", "utf-8")
+        try:
+            fncontents = open(fn).read().decode("utf-8")
+            fi = codecs.open(fn,"r", "utf-8")
+        except:
+            fi = codecs.open(fn,"r", "windows-1251")
         
         #all fields in current CSV
         fields_line = fi.readlines()[0].replace(u"\ufeff","").replace("\r\n","")   #признак кодировки текста в UTF-8 в начале строки
