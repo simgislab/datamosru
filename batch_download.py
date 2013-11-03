@@ -11,6 +11,7 @@
 
 import urllib2
 import csv
+import os
 
 u = urllib2.urlopen("http://gis-lab.info/data/mos.ru/data/_listings/_general.csv")
 fc = csv.DictReader(u,delimiter=";")
@@ -24,5 +25,16 @@ for row in fc:
         localfile.close()
         print(url)
     except:
-        message = row['CODE'] + " failed to load"
+        message = row['CODE'] + " failed to load. Downloading substitute"
         print(message)
+        fname = row['CODE'] + ".7z"
+        url = "http://gis-lab.info/data/mos.ru/20130929/" + fname
+
+        remotefile = urllib2.urlopen(url)
+        localfile = open("data/" + fname, 'wb')
+        localfile.write(remotefile.read())
+        localfile.close()
+        
+        cmd = "C:/tools/7-Zip/7z.exe x  -odata data/" + fname
+        os.system(cmd)
+        os.remove("data/" + fname)
