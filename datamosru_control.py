@@ -334,7 +334,7 @@ def compare_with_latest(dataset,curdate):
         fPz.close()
         
         f = open(logf,"a")
-        f.write(curdate + "," + str(numfldsN) + "," + str(numrecsN) + "\n")
+        f.write(curdate + ";" + str(numfldsN) + ";" + str(numrecsN) + "\n")
         f.close()
     
     fP = open(fnP)  #previous version
