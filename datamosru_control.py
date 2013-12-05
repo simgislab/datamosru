@@ -206,7 +206,7 @@ def hidden_datasets_list(datasets_current,datasets_all):
         if len(pos) != 0: #dataset is present in both current list and hidden, meaning it was restored
             str1 = u"Данные восстановлены: "
             str2 = "... ("+ dataset.code + ") "
-            twitlimit = 140 - len(str1) - len(str2) - 27
+            twitlimit = 140 - len(str1) - len(str2) - 27 - 20
             change_msg = str1 + dataset.description[0:twitlimit:] + str2
             print(change_msg.encode("utf-8"))
             log(change_msg,curdate)
@@ -236,7 +236,7 @@ def hidden_datasets_list(datasets_current,datasets_all):
                 
                 str1 = u"Данные скрыты. "
                 str2 =  "... ("+ dataset.code + ") "
-                twitlimit = 140 - len(str1) - len(str2) - 27
+                twitlimit = 140 - len(str1) - len(str2) - 27 - 20
                 change_msg = str1 + dataset.description[0:twitlimit:] + str2
                 print(change_msg.encode("utf-8"))
                 log(change_msg,curdate)
