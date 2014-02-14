@@ -86,8 +86,8 @@ def parse_list(listingurl,curdate):
         url = "http://data.mos.ru" + url
         downurl = "http://data.mos.ru/datasets/download/" + code + "/"
         description = item.find('a', { "class" : "title" }).strings.next()
-        cat = catsrc[i].strings.next()
-        source = catsrc[i+1].strings.next()
+        cat = catsrc[i].find("span").strings.next()
+        source = catsrc[i+1].find("span").strings.next()
         i = i + 2
 
         #save to CSV file
@@ -103,6 +103,17 @@ def parse_list(listingurl,curdate):
     
 def full_datasets_list(datasets_current):
 #Takes current datasets and updates general list of datasets with new ones. Needed, because current list of datasets sometimes is incomplete.
+    datasets_all = read_full_datasets_list()
+    
+    #check for datasets added in downloaded list compared to general list
+    for dataset in datasets_current:
+        pos = [i for i, v in enumerate(datasets_all) if v[0] == dataset.code]
+        if len(pos) == 0: #Dataset missing in general list, i.e. new dataset is found
+            add_full_datasets_list(dataset)
+             
+    return datasets_all
+
+def read_full_datasets_list():
     localfile = codecs.open("_listings/_general.csv", 'rb', 'utf-8')
     datasets_all = []
     dataset = namedtuple('dataset', 'code,geo,lastgeo,url,downurl,description,source,cat,added')
@@ -113,37 +124,35 @@ def full_datasets_list(datasets_current):
         node = dataset(code,geo,lastgeo,url,downurl,description,source,cat.strip(),added)
         datasets_all.append(node)
     
-    #check for datasets added in downloaded list compared to general list
-    for dataset in datasets_current:
-        pos = [i for i, v in enumerate(datasets_all) if v[0] == dataset.code]
-        if len(pos) == 0: #Dataset missing in general list, i.e. new dataset is found
-            #EVENT - dataset added
-            #add a record to full datasets list csv
-            localfile = open("_listings/_general.csv", 'a')
-            localfile.write((dataset.code + ";" + dataset.geo + ";" + dataset.lastgeo + ";" + dataset.url + ";" + dataset.downurl + ";" + "\"" + dataset.description + "\"" + ";" + "\"" + dataset.source + "\"" + ";" + "\"" + dataset.cat + "\"" + ";" + curdate + "\n").encode("utf-8"))
-            localfile.close()
-            
-            str1 = u"Новые данные: "
-            str2 = "... ("+ dataset.code + ") "
-            twitlimit = 140 - len(str1) - len(str2) - 37
-            change_msg = str1 + dataset.description[0:twitlimit:] + str2
-            print(change_msg.encode("utf-8"))
-            log(change_msg,curdate)
-            twit(change_msg,dataset,allowtwit)
-
-            if os.path.exists(dataset.code) == False: os.mkdir(dataset.code)
-            if os.path.exists(dataset.code + "/archive") == False: os.mkdir (dataset.code + "/archive")
-            f = open(dataset.code + "/" + dataset.code + "_changes.log","w")
-            f.write("DATE;FIELDS;RECORDS" + "\n")            
-            f.write(curdate + ";0;0" + "\n")
-            f.close()
-            
-            #add missing dataset to full list of datasets as well 
-            datasetn = namedtuple('dataset', 'code,geo,lastgeo,url,downurl,description,source,cat,added')
-            node = datasetn(dataset.code,dataset.geo,dataset.lastgeo,dataset.url,dataset.downurl,dataset.description,dataset.source,dataset.cat.strip(),curdate)
-            datasets_all.insert(0,node)
-             
     return datasets_all
+    
+def add_full_datasets_list(dataset):
+    #add a record to full datasets list csv
+    localfile = open("_listings/_general.csv", 'a')
+    localfile.write((dataset.code + ";" + dataset.geo + ";" + dataset.lastgeo + ";" + dataset.url + ";" + dataset.downurl + ";" + "\"" + dataset.description + "\"" + ";" + "\"" + dataset.source + "\"" + ";" + "\"" + dataset.cat + "\"" + ";" + curdate + "\n").encode("utf-8"))
+    localfile.close()
+    
+    str1 = u"Новые данные: "
+    str2 = "... ("+ dataset.code + ") "
+    twitlimit = 140 - len(str1) - len(str2) - 37
+    change_msg = str1 + dataset.description[0:twitlimit:] + str2
+    print(change_msg.encode("utf-8"))
+    log(change_msg,curdate)
+    twit(change_msg,dataset,allowtwit)
+
+    if os.path.exists(dataset.code) == False: os.mkdir(dataset.code)
+    if os.path.exists(dataset.code + "/archive") == False: os.mkdir (dataset.code + "/archive")
+    f = open(dataset.code + "/" + dataset.code + "_changes.log","w")
+    f.write("DATE;FIELDS;RECORDS" + "\n")            
+    f.write(curdate + ";0;0" + "\n")
+    f.close()
+    
+    #add new dataset to full list of datasets in memory as well 
+    datasetn = namedtuple('dataset', 'code,geo,lastgeo,url,downurl,description,source,cat,added')
+    node = datasetn(dataset.code,dataset.geo,dataset.lastgeo,dataset.url,dataset.downurl,dataset.description,dataset.source,dataset.cat.strip(),curdate)
+    datasets_all.insert(0,node)
+    
+    #EVENT - dataset added
 
 def add_removed_datasets_list(dataset): 
     localfile = open("_listings/_removed.csv", 'a')
@@ -174,7 +183,6 @@ def del_removed_datasets_list(dataset):
     print(change_msg.encode("utf-8"))
     log(change_msg,curdate)
     twit(change_msg,dataset,allowtwit)
-
     
 def removed_datasets_list():
     localfile = codecs.open("_listings/_removed.csv", 'rb', 'utf-8')
