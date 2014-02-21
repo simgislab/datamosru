@@ -109,7 +109,7 @@ def full_datasets_list(datasets_current):
     for dataset in datasets_current:
         pos = [i for i, v in enumerate(datasets_all) if v[0] == dataset.code]
         if len(pos) == 0: #Dataset missing in general list, i.e. new dataset is found
-            add_full_datasets_list(dataset)
+            datasets_all = add_full_datasets_list(dataset,datasets_all)
              
     return datasets_all
 
@@ -126,7 +126,7 @@ def read_full_datasets_list():
     
     return datasets_all
     
-def add_full_datasets_list(dataset):
+def add_full_datasets_list(dataset,dataset_all):
     #add a record to full datasets list csv
     localfile = open("_listings/_general.csv", 'a')
     localfile.write((dataset.code + ";" + dataset.geo + ";" + dataset.lastgeo + ";" + dataset.url + ";" + dataset.downurl + ";" + "\"" + dataset.description + "\"" + ";" + "\"" + dataset.source + "\"" + ";" + "\"" + dataset.cat + "\"" + ";" + curdate + "\n").encode("utf-8"))
@@ -151,6 +151,8 @@ def add_full_datasets_list(dataset):
     datasetn = namedtuple('dataset', 'code,geo,lastgeo,url,downurl,description,source,cat,added')
     node = datasetn(dataset.code,dataset.geo,dataset.lastgeo,dataset.url,dataset.downurl,dataset.description,dataset.source,dataset.cat.strip(),curdate)
     datasets_all.insert(0,node)
+    
+    return dataset_all
     
     #EVENT - dataset added
 
